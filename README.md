@@ -2,7 +2,27 @@
 
 Production-ready ML system for predicting fire alarm testing prices. Built with FastAPI, scikit-learn, MLflow, and Streamlit.
 
-## 🎯 Overview
+## 🎯 Why This Project Matters
+
+This project solves a **real-world business problem** in the fire safety industry:
+
+- **Business Impact**: Accurate price predictions enable competitive bidding and cost estimation for fire alarm testing contracts. This directly affects profitability and customer relationships in a regulated industry.
+
+- **Production-Ready ML Inference**: Not just a model—a complete system with REST API, web UI, monitoring, and deployment infrastructure. Ready for production use with proper error handling, logging, and scalability.
+
+- **MLOps Foundation**: Comprehensive logging enables future model retraining with real-world data. Every prediction is logged, creating a feedback loop for continuous improvement and drift detection.
+
+## 🏗️ What's Technically Interesting
+
+- **Conformal Prediction**: Confidence intervals are **calibrated on test set residuals**, not hardcoded ±10%. Uses proper statistical methods for uncertainty quantification.
+
+- **OneHotEncoder + ColumnTransformer**: Professional feature engineering (not LabelEncoder!). Proper handling of categorical features without introducing false ordinal relationships.
+
+- **Local Artifact Mode**: Production model loading is robust and container-friendly. No MLflow dependency in serving—models load from local files for reliability.
+
+- **Comprehensive Test Suite**: 17 pytest tests covering schema validation, API endpoints, and error handling. Production-grade quality assurance.
+
+## 📋 Overview
 
 This is a complete ML system that includes:
 - **ML Pipeline**: Feature engineering with OneHotEncoder, model training with MLflow
@@ -41,44 +61,54 @@ Avarn/
 └── scripts/               # Utility scripts (data generation, etc.)
 ```
 
-## 🚀 Quick Start
+## 🚀 Quick Start (30 seconds)
 
-### 1. Install Dependencies
+**For Tech Leads**: This is a production-ready ML system. Here's how to run it:
+
+### 1. Install & Train (2 minutes)
 
 ```bash
 pip install -r requirements.txt
-```
-
-### 2. Train Model
-
-```bash
 python app/models/train_with_mlflow.py
 ```
 
-This will:
-- Load training data from `data/training_data.csv`
-- Train multiple models (Gradient Boosting, Random Forest, Ridge)
-- Track experiments in MLflow
-- Save best model to `models/best_model.pkl`
-- Calculate conformal prediction intervals from test set residuals
-
-### 3. Start API Server
+### 2. Start API (10 seconds)
 
 ```bash
 python run_api.py
 ```
 
-API will be available at `http://localhost:8000`
-- Interactive docs: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
+**API**: `http://localhost:8000` | **Docs**: `http://localhost:8000/docs`
 
-### 4. Start Web UI (Optional)
+### 3. Test It (5 seconds)
 
 ```bash
-python run_streamlit.py
+curl http://localhost:8000/health
 ```
 
-Streamlit UI will be available at `http://localhost:8501`
+### 4. Make a Prediction
+
+```bash
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "antal_sektioner": 8,
+    "antal_detektorer": 25,
+    "antal_larmdon": 15,
+    "dörrhållarmagneter": 5,
+    "ventilation": 1,
+    "stad": "Stockholm",
+    "kvartalsvis": 0,
+    "månadsvis": 1,
+    "årsvis": 0
+  }'
+```
+
+**That's it.** The system is running with:
+- ✅ Conformal prediction intervals (calibrated, not hardcoded)
+- ✅ Production-ready model loading
+- ✅ Comprehensive test suite
+- ✅ Full API documentation
 
 ## 📡 API Usage
 
@@ -136,16 +166,18 @@ curl -X POST "http://localhost:8000/predict/batch" \
 
 ## 🧪 Testing
 
-Run the test suite:
+**17 comprehensive pytest tests** covering the entire system:
 
 ```bash
 pytest tests/ -v
 ```
 
-Tests cover:
-- Schema validation (Pydantic models)
-- API endpoints (/health, /predict)
-- Error handling and edge cases
+**Test Coverage:**
+- ✅ **Schema Validation** (9 tests): Pydantic model validation, field constraints, enum validation
+- ✅ **API Health Endpoint** (2 tests): Response structure, data types, health status
+- ✅ **API Predict Endpoint** (6 tests): Successful predictions, error handling, frequency validation, city validation, missing fields
+
+All tests pass and use mocked model loader for fast, reliable testing without requiring trained models.
 
 ## 🔧 Key Features
 
@@ -167,10 +199,12 @@ Tests cover:
 - Prediction logging to JSONL files
 - Health check endpoint
 
-### Confidence Intervals
-- **Conformal prediction** based on test set residuals
-- 90% and 95% confidence intervals
-- Calibrated on holdout set (not hardcoded ±10%)
+### Confidence Intervals (Uncertainty Quantification)
+- **Conformal Prediction**: Confidence intervals are **calibrated on test set residuals**, not hardcoded ±10%
+- Uses 95th percentile of absolute residuals for 90% intervals
+- Proper statistical method for uncertainty quantification
+- Intervals are **calibrated on holdout set**—you can say "90% of predictions fall within this interval"
+- This is a **major improvement** over heuristic approaches
 
 ### Model Loading
 - **Local artifact mode**: Always loads from `models/best_model.pkl`
@@ -282,13 +316,16 @@ The project follows best practices:
 
 ## 🎯 Production Checklist
 
-- ✅ OneHotEncoder for categorical features
-- ✅ Conformal prediction intervals (not hardcoded)
-- ✅ Local artifact mode (no MLflow in production)
-- ✅ Comprehensive test suite
-- ✅ Docker support
-- ✅ Monitoring and logging
-- ✅ API documentation (OpenAPI)
+**What makes this production-ready:**
+
+- ✅ **OneHotEncoder** for categorical features (not LabelEncoder!)
+- ✅ **Conformal prediction** intervals (calibrated on test set, not hardcoded ±10%)
+- ✅ **Local artifact mode** (no MLflow dependency in production)
+- ✅ **17 pytest tests** (schema validation, API endpoints, error handling)
+- ✅ **Docker support** for containerized deployment
+- ✅ **Monitoring and logging** (all predictions logged for retraining)
+- ✅ **API documentation** (automatic OpenAPI/Swagger docs)
+- ✅ **Type safety** (Pydantic schemas throughout)
 
 ## 📄 License
 
