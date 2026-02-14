@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/Richard/Python/Avarn/models/mlruns/149558365344420259/models/m-f395f194b2e742ba8eee4093009cd06c/artifacts
+creation_timestamp: 1771101188024
+experiment_id: '149558365344420259'
+last_updated_timestamp: 1771101195928
+model_id: m-f395f194b2e742ba8eee4093009cd06c
+model_type: null
+name: model
+source_run_id: 951942eae6c1436bae83f821f9574ec7
+status: 2
+status_message: null

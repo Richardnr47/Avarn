@@ -1,0 +1,28 @@
+{
+  "version": "v2.0",
+  "created_at": "2026-02-14T21:32:57.902332",
+  "feature_columns": [
+    "antal_detektorer",
+    "antal_larmdon",
+    "antal_sektioner",
+    "dörrhållarmagneter",
+    "kvartalsvis",
+    "månadsvis",
+    "stad",
+    "ventilation",
+    "årsvis"
+  ],
+  "numeric_features": [
+    "antal_detektorer",
+    "antal_larmdon",
+    "antal_sektioner",
+    "dörrhållarmagneter",
+    "kvartalsvis",
+    "månadsvis",
+    "ventilation",
+    "årsvis"
+  ],
+  "categorical_features": [
+    "stad"
+  ]
+}

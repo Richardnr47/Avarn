@@ -9,15 +9,17 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Any, Optional
 import logging
-import mlflow
-import mlflow.sklearn
+# MLflow imports removed - only used for training, not serving
 
 logger = logging.getLogger(__name__)
 
 
 class ModelLoader:
     """
-    Production model loader with MLflow integration.
+    Production model loader.
+    
+    Always loads from local files (models/best_model.pkl + preprocessor.pkl).
+    MLflow is only used for training and experiment tracking locally, not for serving.
     """
     
     def __init__(self, models_dir: Optional[Path] = None):
@@ -36,19 +38,23 @@ class ModelLoader:
         self.model_version = None
         self.pipeline_version = None
         
-        # Try to load MLflow model if available
-        self.mlflow_model = None
-        self.mlflow_uri = None
+        # Residual statistics for conformal prediction
+        self.residual_90_percentile = None  # For 90% confidence intervals
+        self.residual_95_percentile = None  # For 95% confidence intervals
+        
+        # MLflow is only used for training, not for serving
+        # Production always uses local files (best_model.pkl)
     
     def load_latest_model(self) -> None:
-        """Load the latest model and feature pipeline."""
+        """
+        Load model and feature pipeline from local files.
+        
+        For production: Always use local files (models/best_model.pkl + preprocessor.pkl)
+        MLflow is only used for training and comparison locally, not for serving.
+        """
         try:
-            # Try MLflow first
-            if self._load_mlflow_model():
-                logger.info("Loaded model from MLflow")
-                return
-            
-            # Fallback to local files
+            # Always use local files for production serving
+            # This is more robust and works reliably in containers/deployments
             self._load_local_model()
             logger.info("Loaded model from local files")
             
@@ -56,46 +62,8 @@ class ModelLoader:
             logger.error(f"Failed to load model: {e}")
             raise
     
-    def _load_mlflow_model(self) -> bool:
-        """Try to load model from MLflow."""
-        try:
-            # Check if MLflow is configured
-            mlflow_uri = Path(self.models_dir) / "mlruns"
-            if not mlflow_uri.exists():
-                return False
-            
-            mlflow.set_tracking_uri(str(mlflow_uri))
-            
-            # Get latest model from registry
-            # This is simplified - in production, use proper model registry
-            from mlflow.tracking import MlflowClient
-            client = MlflowClient()
-            
-            # Get latest run
-            experiments = client.search_experiments()
-            if not experiments:
-                return False
-            
-            latest_run = None
-            for exp in experiments:
-                runs = client.search_runs(exp.experiment_id, order_by=["start_time desc"], max_results=1)
-                if runs:
-                    latest_run = runs[0]
-                    break
-            
-            if latest_run:
-                model_uri = f"runs:/{latest_run.info.run_id}/model"
-                self.mlflow_model = mlflow.sklearn.load_model(model_uri)
-                self.model = self.mlflow_model
-                self.model_version = latest_run.info.run_id
-                self.pipeline_version = "v1.0"  # Extract from run if available
-                return True
-            
-            return False
-            
-        except Exception as e:
-            logger.warning(f"MLflow load failed: {e}")
-            return False
+    # MLflow loading removed - production always uses local files
+    # MLflow is only used for training and experiment tracking locally
     
     def _load_local_model(self) -> None:
         """Load model from local pickle files."""
@@ -114,18 +82,60 @@ class ModelLoader:
         self.model = model_data['model']
         self.model_version = model_data.get('model_name', 'unknown')
         
+        # Load residual statistics for conformal prediction
+        self.residual_90_percentile = model_data.get('residual_90_percentile')
+        self.residual_95_percentile = model_data.get('residual_95_percentile')
+        
+        if self.residual_90_percentile is None:
+            logger.warning("No residual statistics found. Using fallback confidence intervals.")
+        
         # Load feature pipeline
         # Try new pipeline format first
         try:
             from app.features.feature_pipeline import FeaturePipeline
             self.feature_pipeline = FeaturePipeline.load(str(pipeline_path))
             self.pipeline_version = self.feature_pipeline.version
-        except:
+            
+            # Fix encoding issues with Swedish characters in feature columns
+            # This can happen when pickle saves/loads with wrong encoding
+            if self.feature_pipeline.feature_columns:
+                # Normalize column names to handle encoding issues
+                import unicodedata
+                normalized_columns = []
+                for col in self.feature_pipeline.feature_columns:
+                    # Try to fix common encoding issues
+                    col_fixed = col.encode('latin1', errors='ignore').decode('utf-8', errors='ignore')
+                    if col_fixed != col:
+                        normalized_columns.append(col_fixed)
+                    else:
+                        normalized_columns.append(col)
+                
+                # If we have a mismatch, try to map columns
+                if any('' in col for col in self.feature_pipeline.feature_columns):
+                    # Create mapping for common Swedish characters
+                    char_map = {
+                        'drrhllarmagneter': 'dörrhållarmagneter',
+                        'mnadsvis': 'månadsvis',
+                        'rsvis': 'årsvis'
+                    }
+                    # Update feature_columns with correct encoding
+                    fixed_columns = []
+                    for col in self.feature_pipeline.feature_columns:
+                        fixed_col = char_map.get(col, col)
+                        fixed_columns.append(fixed_col)
+                    self.feature_pipeline.feature_columns = fixed_columns
+                    
+        except Exception as e:
+            logger.warning(f"Failed to load new pipeline format: {e}")
             # Fallback to old preprocessor format
-            from scripts.preprocess import DataPreprocessor
-            self.feature_pipeline = DataPreprocessor()
-            self.feature_pipeline.load_preprocessor(str(pipeline_path))
-            self.pipeline_version = "v1.0"
+            try:
+                from scripts.preprocess import DataPreprocessor
+                self.feature_pipeline = DataPreprocessor()
+                self.feature_pipeline.load_preprocessor(str(pipeline_path))
+                self.pipeline_version = "v1.0"
+            except Exception as e2:
+                logger.error(f"Failed to load old preprocessor format: {e2}")
+                raise
     
     def predict(self, request_dict: Dict[str, Any]) -> float:
         """
@@ -159,6 +169,37 @@ class ModelLoader:
         prediction = max(0, float(prediction))
         
         return prediction
+    
+    def predict_with_interval(self, request_dict: Dict[str, Any], confidence: float = 0.90) -> tuple:
+        """
+        Make prediction with confidence interval using conformal prediction.
+        
+        Args:
+            request_dict: Dictionary with feature values
+            confidence: Confidence level (0.90 for 90%, 0.95 for 95%)
+            
+        Returns:
+            Tuple of (prediction, lower_bound, upper_bound)
+        """
+        prediction = self.predict(request_dict)
+        
+        # Use conformal prediction based on residual percentiles
+        if confidence == 0.90 and self.residual_90_percentile is not None:
+            margin = self.residual_90_percentile
+        elif confidence == 0.95 and self.residual_95_percentile is not None:
+            margin = self.residual_95_percentile
+        else:
+            # Fallback: use 90% percentile if available, otherwise 10% of prediction
+            if self.residual_90_percentile is not None:
+                margin = self.residual_90_percentile
+            else:
+                logger.warning("No residual statistics available. Using fallback 10% margin.")
+                margin = prediction * 0.1
+        
+        lower = max(0, prediction - margin)
+        upper = prediction + margin
+        
+        return prediction, lower, upper
     
     def is_loaded(self) -> bool:
         """Check if model is loaded."""

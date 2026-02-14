@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/Richard/Python/Avarn/models/mlruns/149558365344420259/2be04b846990498088654a60cb6aeb83/artifacts
+end_time: 1771100283190
+entry_point_name: ''
+experiment_id: '149558365344420259'
+lifecycle_stage: active
+run_id: 2be04b846990498088654a60cb6aeb83
+run_name: random_forest_20260214_211745
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1771100265850
+status: 3
+tags: []
+user_id: Richard

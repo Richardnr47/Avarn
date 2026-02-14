@@ -1,3 +1,16 @@
 prediction_id,timestamp,predicted_price,antal_sektioner,antal_detektorer,antal_larmdon,dörrhållarmagneter,ventilation,stad,kvartalsvis,månadsvis,årsvis,model_version,pipeline_version
 pred_a791ae40bd,2026-02-14T20:01:30.062704,46734.39,8,25,15,5,1,Stockholm,0,1,0,gradient_boosting,v1.0
 pred_56849842f2,2026-02-14T20:57:50.591719,38592.21,8,25,15,5,0,Stockholm,1,0,0,gradient_boosting,v1.0
+pred_7e41720da5,2026-02-14T21:31:59.567747,45000.0,8,25,15,5,1,Stockholm,0,1,0,test_v1.0,v2.0
+pred_e96c412d4a,2026-02-14T21:31:59.624584,45000.0,8,25,15,5,1,Stockholm,0,1,0,test_v1.0,v2.0
+pred_6c4e1c9e73,2026-02-14T21:31:59.632565,45000.0,8,25,15,5,1,Göteborg,0,1,0,test_v1.0,v2.0
+pred_31a7f2c6f6,2026-02-14T21:31:59.642730,45000.0,8,25,15,5,1,Malmö,0,1,0,test_v1.0,v2.0
+pred_2ff4e8ef7a,2026-02-14T21:31:59.654355,45000.0,8,25,15,5,1,Uppsala,0,1,0,test_v1.0,v2.0
+pred_6829e35c37,2026-02-14T21:31:59.663545,45000.0,8,25,15,5,1,Linköping,0,1,0,test_v1.0,v2.0
+pred_5265304848,2026-02-14T21:31:59.675393,45000.0,8,25,15,5,1,Örebro,0,1,0,test_v1.0,v2.0
+pred_1078d4a1b0,2026-02-14T21:31:59.686377,45000.0,8,25,15,5,1,Västerås,0,1,0,test_v1.0,v2.0
+pred_79f81c7088,2026-02-14T21:31:59.694486,45000.0,8,25,15,5,1,Helsingborg,0,1,0,test_v1.0,v2.0
+pred_2b9bb056b5,2026-02-14T21:34:44.631126,41331.11,8,25,15,5,0,Stockholm,1,0,0,gradient_boosting,v2.0
+pred_72065481aa,2026-02-14T21:35:08.413986,74127.71,50,25,15,5,0,Stockholm,1,0,0,gradient_boosting,v2.0
+pred_2dd53912af,2026-02-14T21:35:13.857782,94589.36,50,200,15,5,0,Stockholm,1,0,0,gradient_boosting,v2.0
+pred_327ce0a6e9,2026-02-14T21:35:27.864463,89765.07,50,200,15,5,0,Stockholm,0,0,1,gradient_boosting,v2.0

@@ -22,7 +22,6 @@ warnings.filterwarnings('ignore', category=FutureWarning, module='mlflow')
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from app.features.feature_pipeline import FeaturePipeline
-from scripts.preprocess import DataPreprocessor
 
 
 def train_with_mlflow(
@@ -55,10 +54,33 @@ def train_with_mlflow(
     
     # Load and prepare data
     print("Loading data...")
-    preprocessor = DataPreprocessor()
-    df = preprocessor.load_data(data_path)
-    df = preprocessor.clean_data(df)
-    X, y = preprocessor.prepare_features(df, fit=True)
+    import pandas as pd
+    
+    # Load data
+    df = pd.read_csv(data_path)
+    print(f"Loaded {len(df)} records")
+    
+    # Basic cleaning
+    df = df.drop_duplicates()
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    for col in numeric_cols:
+        if df[col].isnull().sum() > 0:
+            df[col].fillna(df[col].median(), inplace=True)
+    
+    categorical_cols = df.select_dtypes(include=['object']).columns
+    for col in categorical_cols:
+        if df[col].isnull().sum() > 0:
+            df[col].fillna(df[col].mode()[0] if len(df[col].mode()) > 0 else 'Unknown', inplace=True)
+    
+    # Create and fit feature pipeline with OneHotEncoder
+    pipeline = FeaturePipeline(version="v2.0")  # v2.0 = OneHotEncoder version
+    X, y = pipeline.fit(df).transform(df, fit=True)
+    
+    # Save pipeline
+    models_dir = Path(__file__).parent.parent.parent / "models"
+    models_dir.mkdir(exist_ok=True)
+    pipeline.save(str(models_dir / "preprocessor.pkl"))
+    print(f"Feature pipeline saved (using OneHotEncoder)")
     
     # Split data
     from sklearn.model_selection import train_test_split
@@ -136,20 +158,37 @@ def train_with_mlflow(
             mlflow.log_param("n_test", len(X_test))
             mlflow.log_param("n_features", X_train.shape[1])
             
+            # Calculate residuals for conformal prediction
+            # Use validation set residuals to calibrate confidence intervals
+            residuals = np.abs(y_test - y_test_pred)
+            
+            # Calculate percentiles for confidence intervals
+            # 90% interval: use 95th percentile of absolute residuals
+            # This ensures 90% of predictions fall within the interval
+            residual_90_percentile = np.percentile(residuals, 95)
+            residual_95_percentile = np.percentile(residuals, 97.5)
+            
+            mlflow.log_metric("residual_90_percentile", residual_90_percentile)
+            mlflow.log_metric("residual_95_percentile", residual_95_percentile)
+            
             print(f"  Test RMSE: {test_rmse:.2f}")
             print(f"  Test R²: {test_r2:.4f}")
+            print(f"  90% confidence margin: {residual_90_percentile:.2f} SEK")
             
             # Track best model
             if test_rmse < best_score:
                 best_score = test_rmse
                 best_model = model
                 best_name = model_name
+                best_residual_90 = residual_90_percentile
+                best_residual_95 = residual_95_percentile
     
     print(f"\n{'='*60}")
     print(f"Best Model: {best_name} (Test RMSE: {best_score:.2f})")
+    print(f"90% Confidence Margin: {best_residual_90:.2f} SEK")
     print(f"{'='*60}")
     
-    # Save best model locally
+    # Save best model locally with residual statistics for conformal prediction
     models_dir = Path(__file__).parent.parent.parent / "models"
     models_dir.mkdir(exist_ok=True)
     
@@ -157,6 +196,9 @@ def train_with_mlflow(
     model_data = {
         'model': best_model,
         'model_name': best_name,
+        'test_rmse': best_score,
+        'residual_90_percentile': best_residual_90,  # For 90% confidence intervals
+        'residual_95_percentile': best_residual_95,  # For 95% confidence intervals
         'timestamp': datetime.now().isoformat()
     }
     
@@ -165,6 +207,7 @@ def train_with_mlflow(
         pickle.dump(model_data, f)
     
     print(f"Best model saved to {best_model_path}")
+    print(f"Confidence intervals calibrated on test set residuals")
     
     return best_model, best_name
 
@@ -173,7 +216,12 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Train models with MLflow')
-    parser.add_argument('--data', type=str, default='../data/training_data.csv',
+    
+    # Get project root (3 levels up from this file: app/models/train_with_mlflow.py)
+    project_root = Path(__file__).parent.parent.parent
+    default_data_path = project_root / "data" / "training_data.csv"
+    
+    parser.add_argument('--data', type=str, default=str(default_data_path),
                         help='Path to training data')
     parser.add_argument('--experiment', type=str, default='fire_alarm_price_prediction',
                         help='MLflow experiment name')

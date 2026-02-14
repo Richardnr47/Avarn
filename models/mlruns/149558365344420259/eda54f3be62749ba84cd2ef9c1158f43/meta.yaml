@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/Richard/Python/Avarn/models/mlruns/149558365344420259/eda54f3be62749ba84cd2ef9c1158f43/artifacts
+end_time: 1771100297709
+entry_point_name: ''
+experiment_id: '149558365344420259'
+lifecycle_stage: active
+run_id: eda54f3be62749ba84cd2ef9c1158f43
+run_name: ridge_20260214_211803
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1771100283228
+status: 3
+tags: []
+user_id: Richard

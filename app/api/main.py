@@ -106,16 +106,13 @@ async def predict(request: PredictionRequest):
         # Generate prediction ID
         prediction_id = f"pred_{uuid.uuid4().hex[:10]}"
         
-        # Make prediction
-        prediction = model_loader.predict(request.dict())
-        
-        # Calculate confidence interval (simple approach: ±10%)
-        confidence_margin = prediction * 0.1
+        # Make prediction with conformal prediction interval (calibrated on test set)
+        prediction, lower, upper = model_loader.predict_with_interval(request.dict(), confidence=0.90)
         
         response = PredictionResponse(
             predicted_price=round(prediction, 2),
-            confidence_interval_lower=round(prediction - confidence_margin, 2),
-            confidence_interval_upper=round(prediction + confidence_margin, 2),
+            confidence_interval_lower=round(lower, 2),
+            confidence_interval_upper=round(upper, 2),
             model_version=model_loader.get_model_version(),
             feature_pipeline_version=model_loader.get_pipeline_version(),
             prediction_id=prediction_id
@@ -155,13 +152,13 @@ async def predict_batch(request: BatchPredictionRequest):
                 continue  # Skip invalid items
             
             prediction_id = f"pred_{uuid.uuid4().hex[:10]}"
-            prediction = model_loader.predict(item.dict())
-            confidence_margin = prediction * 0.1
+            # Use conformal prediction for confidence intervals
+            prediction, lower, upper = model_loader.predict_with_interval(item.dict(), confidence=0.90)
             
             predictions.append(PredictionResponse(
                 predicted_price=round(prediction, 2),
-                confidence_interval_lower=round(prediction - confidence_margin, 2),
-                confidence_interval_upper=round(prediction + confidence_margin, 2),
+                confidence_interval_lower=round(lower, 2),
+                confidence_interval_upper=round(upper, 2),
                 model_version=model_loader.get_model_version(),
                 feature_pipeline_version=model_loader.get_pipeline_version(),
                 prediction_id=prediction_id

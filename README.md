@@ -1,163 +1,299 @@
-# Fire Alarm Testing Price Prediction System
+# Avarn Fire Alarm Testing Price Prediction System
 
-A machine learning system for predicting prices for fire alarm testing services. This is implemented as a regression problem using various ML algorithms.
+Production-ready ML system for predicting fire alarm testing prices. Built with FastAPI, scikit-learn, MLflow, and Streamlit.
 
-## Project Structure
+## 🎯 Overview
+
+This is a complete ML system that includes:
+- **ML Pipeline**: Feature engineering with OneHotEncoder, model training with MLflow
+- **REST API**: FastAPI-based inference API with conformal prediction intervals
+- **Web UI**: Streamlit interface for interactive predictions
+- **Monitoring**: Prediction logging and performance tracking
+- **MLOps**: Model versioning, experiment tracking, and deployment-ready architecture
+
+## 🏗️ Architecture
 
 ```
 Avarn/
-├── data/                    # Data directory
-│   └── training_data.csv    # Training dataset
-├── models/                  # Saved models and preprocessors
-│   ├── best_model.pkl       # Best performing model
-│   ├── preprocessor.pkl     # Data preprocessor
-│   └── training_results.json # Training metrics
-├── scripts/                 # Python scripts
-│   ├── preprocess.py        # Data preprocessing module
-│   ├── train_model.py       # Model training script
-│   └── predict.py           # Prediction script
-├── requirements.txt         # Python dependencies
-└── README.md               # This file
+├── app/                    # Production application code
+│   ├── api/                # FastAPI REST API
+│   │   ├── main.py        # API endpoints (/predict, /health)
+│   │   └── schemas.py     # Pydantic request/response models
+│   ├── features/          # Feature engineering pipeline
+│   │   └── feature_pipeline.py  # OneHotEncoder + ColumnTransformer
+│   ├── models/            # Model management
+│   │   ├── model_loader.py      # Production model loader
+│   │   └── train_with_mlflow.py # Training with MLflow tracking
+│   ├── monitoring/        # Prediction logging
+│   │   └── logger.py      # JSONL prediction logs
+│   └── ui/                # Streamlit web interface
+│       └── streamlit_app.py
+├── models/                # Saved models and artifacts
+│   ├── best_model.pkl     # Production model
+│   ├── preprocessor.pkl   # Feature pipeline
+│   └── mlruns/            # MLflow experiment tracking
+├── data/                  # Training data
+│   └── training_data.csv
+├── tests/                 # Pytest test suite
+│   ├── test_schemas.py    # Schema validation tests
+│   ├── test_api_health.py # Health endpoint tests
+│   └── test_api_predict.py # Prediction endpoint tests
+└── scripts/               # Utility scripts (data generation, etc.)
 ```
 
-## Installation
+## 🚀 Quick Start
 
-1. Install Python dependencies:
+### 1. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-## Data Format
-
-Your training data CSV file should contain:
-- **Features**: Various attributes that affect pricing (e.g., building size, number of alarms, location, service type, etc.)
-- **Target**: A `price` column with the actual testing prices
-
-Example features might include:
-- `building_size` (numeric): Size of the building in square meters
-- `num_alarms` (numeric): Number of fire alarms to test
-- `location` (categorical): Location/city
-- `service_type` (categorical): Type of testing service
-- `building_age` (numeric): Age of the building
-- `price` (numeric): Target variable - the testing price
-
-## Usage
-
-### 1. Prepare Your Data
-
-Create a CSV file with your training data and place it in the `data/` directory. Ensure it has a `price` column as the target variable.
-
-### 2. Train Models
-
-Train all available regression models:
+### 2. Train Model
 
 ```bash
-cd scripts
-python train_model.py --data ../data/training_data.csv --output ../models
+python app/models/train_with_mlflow.py
 ```
 
-Options:
-- `--data`: Path to training data CSV (default: `../data/training_data.csv`)
-- `--output`: Directory to save models (default: `../models`)
-- `--test-size`: Proportion of data for testing (default: 0.2)
-- `--random-state`: Random seed for reproducibility (default: 42)
+This will:
+- Load training data from `data/training_data.csv`
+- Train multiple models (Gradient Boosting, Random Forest, Ridge)
+- Track experiments in MLflow
+- Save best model to `models/best_model.pkl`
+- Calculate conformal prediction intervals from test set residuals
 
-The script will:
-- Train multiple regression models (Linear Regression, Ridge, Lasso, Random Forest, Gradient Boosting, SVR)
-- Evaluate each model's performance
-- Save the best model automatically
-- Save training results and metrics
-
-### 3. Make Predictions
-
-Use the trained model to make predictions on new data:
+### 3. Start API Server
 
 ```bash
-cd scripts
-python predict.py --input ../data/new_data.csv --output ../data/predictions.csv
+python run_api.py
 ```
 
-Options:
-- `--model`: Path to model file (default: `../models/best_model.pkl`)
-- `--preprocessor`: Path to preprocessor file (default: `../models/preprocessor.pkl`)
-- `--input`: Path to input CSV file with features (required)
-- `--output`: Path to save predictions (optional)
-- `--format`: Output format - `simple` (just predictions) or `detailed` (with input features) (default: `detailed`)
+API will be available at `http://localhost:8000`
+- Interactive docs: `http://localhost:8000/docs`
+- Health check: `http://localhost:8000/health`
 
-## Available Models
-
-The system trains and compares the following regression algorithms:
-
-1. **Linear Regression**: Basic linear model
-2. **Ridge Regression**: L2 regularization
-3. **Lasso Regression**: L1 regularization
-4. **Random Forest**: Ensemble of decision trees
-5. **Gradient Boosting**: Sequential ensemble method
-6. **Support Vector Regression (SVR)**: Kernel-based regression
-
-The best model (lowest test RMSE) is automatically selected and saved.
-
-## Model Evaluation Metrics
-
-The training script evaluates models using:
-- **RMSE** (Root Mean Squared Error): Lower is better
-- **MAE** (Mean Absolute Error): Lower is better
-- **R² Score** (Coefficient of Determination): Higher is better (closer to 1.0)
-
-## Example Workflow
+### 4. Start Web UI (Optional)
 
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Prepare your training data in data/training_data.csv
-
-# 3. Train models
-cd scripts
-python train_model.py --data ../data/training_data.csv
-
-# 4. Make predictions on new data
-python predict.py --input ../data/new_data.csv --output ../data/predictions.csv
+python run_streamlit.py
 ```
 
-## Customization
+Streamlit UI will be available at `http://localhost:8501`
 
-### Adding New Features
+## 📡 API Usage
 
-Simply add new columns to your training CSV. The preprocessor will automatically handle:
-- Numeric features: Scaled using StandardScaler
-- Categorical features: Encoded using LabelEncoder
+### Single Prediction
 
-### Modifying Models
+```bash
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "antal_sektioner": 8,
+    "antal_detektorer": 25,
+    "antal_larmdon": 15,
+    "dörrhållarmagneter": 5,
+    "ventilation": 1,
+    "stad": "Stockholm",
+    "kvartalsvis": 0,
+    "månadsvis": 1,
+    "årsvis": 0
+  }'
+```
 
-Edit `scripts/train_model.py` to:
-- Add new models to the `models` dictionary
-- Adjust hyperparameters
-- Change model selection criteria
+**Response:**
+```json
+{
+  "predicted_price": 45230.50,
+  "confidence_interval_lower": 40000.00,
+  "confidence_interval_upper": 50000.00,
+  "model_version": "gradient_boosting",
+  "feature_pipeline_version": "v2.0",
+  "prediction_id": "pred_1234567890"
+}
+```
 
-### Data Preprocessing
+### Batch Prediction
 
-Modify `scripts/preprocess.py` to:
-- Add custom feature engineering
-- Change scaling methods
-- Implement different encoding strategies
+```bash
+curl -X POST "http://localhost:8000/predict/batch" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "antal_sektioner": 8,
+        "antal_detektorer": 25,
+        "antal_larmdon": 15,
+        "dörrhållarmagneter": 5,
+        "ventilation": 1,
+        "stad": "Stockholm",
+        "kvartalsvis": 0,
+        "månadsvis": 1,
+        "årsvis": 0
+      }
+    ]
+  }'
+```
 
-## Notes
+## 🧪 Testing
 
-- The preprocessor automatically handles missing values and categorical encoding
-- All models are saved for comparison, but the best one is used by default
-- The system ensures feature consistency between training and prediction
-- Unknown categories in prediction data are handled gracefully
+Run the test suite:
 
-## Troubleshooting
+```bash
+pytest tests/ -v
+```
 
-**Error: "Feature columns not defined"**
-- Make sure you've trained a model first before making predictions
+Tests cover:
+- Schema validation (Pydantic models)
+- API endpoints (/health, /predict)
+- Error handling and edge cases
 
-**Error: "Missing features"**
-- Ensure your prediction data has all the same feature columns as training data
+## 🔧 Key Features
 
-**Poor model performance**
-- Check data quality and feature engineering
-- Try collecting more training data
-- Consider feature selection or dimensionality reduction
+### Feature Engineering
+- **OneHotEncoder** for categorical features (not LabelEncoder!)
+- **ColumnTransformer** for proper feature preprocessing
+- Handles encoding issues with Swedish characters
+
+### Model Training
+- Multiple algorithms: Gradient Boosting, Random Forest, Ridge
+- **MLflow** for experiment tracking and model versioning
+- Automatic model selection based on test RMSE
+- Residual-based conformal prediction intervals
+
+### Production API
+- **FastAPI** with automatic OpenAPI documentation
+- Pydantic schema validation
+- Conformal prediction intervals (calibrated on test set)
+- Prediction logging to JSONL files
+- Health check endpoint
+
+### Confidence Intervals
+- **Conformal prediction** based on test set residuals
+- 90% and 95% confidence intervals
+- Calibrated on holdout set (not hardcoded ±10%)
+
+### Model Loading
+- **Local artifact mode**: Always loads from `models/best_model.pkl`
+- No MLflow dependency in production
+- Robust for containers/deployments
+
+## 📊 Model Performance
+
+Current best model (Gradient Boosting):
+- **Test RMSE**: ~3167 SEK
+- **Test R²**: 0.986
+- **90% Confidence Margin**: ~6718 SEK (calibrated on test set)
+
+## 🐳 Deployment
+
+### Docker
+
+```bash
+# Build image
+docker build -t avarn-api .
+
+# Run container
+docker run -p 8000:8000 avarn-api
+```
+
+### Render.com
+
+See `render.yaml` for deployment configuration. The system is configured for:
+- FastAPI service on port 8000
+- Streamlit UI on port 8501 (optional)
+
+## 📁 Project Structure Details
+
+### `app/api/` - REST API
+- `main.py`: FastAPI application with `/predict`, `/predict/batch`, `/health` endpoints
+- `schemas.py`: Pydantic models for request/response validation
+
+### `app/features/` - Feature Engineering
+- `feature_pipeline.py`: Production feature pipeline with OneHotEncoder
+- Handles numeric scaling and categorical encoding
+- Versioned pipeline for reproducibility
+
+### `app/models/` - Model Management
+- `model_loader.py`: Loads models from local files (production-ready)
+- `train_with_mlflow.py`: Training script with MLflow integration
+
+### `app/monitoring/` - Observability
+- `logger.py`: Logs all predictions to JSONL files
+- Enables tracking of prediction performance over time
+
+### `app/ui/` - Web Interface
+- `streamlit_app.py`: Interactive Streamlit UI for predictions
+- Connects to FastAPI backend
+
+## 🔬 MLflow
+
+View experiment tracking:
+
+```bash
+python start_mlflow_ui.py
+```
+
+Then open `http://localhost:5000` to see:
+- Experiment runs and metrics
+- Model artifacts
+- Feature pipeline versions
+
+## 📝 Data Format
+
+Training data should be CSV with columns:
+- `antal_sektioner`: Number of fire alarm sections (1-50)
+- `antal_detektorer`: Number of detectors (1-200)
+- `antal_larmdon`: Number of alarm devices (1-100)
+- `dörrhållarmagneter`: Number of door holder magnets (0-50)
+- `ventilation`: Ventilation system (0=no, 1=yes)
+- `stad`: City (Stockholm, Göteborg, Malmö, etc.)
+- `kvartalsvis`: Quarterly testing (0=no, 1=yes)
+- `månadsvis`: Monthly testing (0=no, 1=yes)
+- `årsvis`: Yearly testing (0=no, 1=yes)
+- `price`: Target variable (price in SEK)
+
+## 🛠️ Development
+
+### Generate Training Data
+
+```bash
+python scripts/generate_dummy_data.py
+```
+
+### Run Tests
+
+```bash
+pytest tests/ -v
+```
+
+### Code Quality
+
+The project follows best practices:
+- Type hints with Pydantic
+- Comprehensive test coverage
+- Production-ready error handling
+- Logging and monitoring
+
+## 📚 Additional Documentation
+
+- `QUICKSTART.md`: Step-by-step getting started guide
+- `TEST_API.md`: API testing examples
+- `streamlit_deploy.md`: Streamlit deployment guide
+
+## 🎯 Production Checklist
+
+- ✅ OneHotEncoder for categorical features
+- ✅ Conformal prediction intervals (not hardcoded)
+- ✅ Local artifact mode (no MLflow in production)
+- ✅ Comprehensive test suite
+- ✅ Docker support
+- ✅ Monitoring and logging
+- ✅ API documentation (OpenAPI)
+
+## 📄 License
+
+[Your License Here]
+
+## 👤 Author
+
+[Your Name/Organization]

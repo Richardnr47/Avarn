@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/Richard/Python/Avarn/models/mlruns/149558365344420259/6a0cd65b01184c60a4e28451318a81e4/artifacts
+end_time: 1771100809866
+entry_point_name: ''
+experiment_id: '149558365344420259'
+lifecycle_stage: active
+run_id: 6a0cd65b01184c60a4e28451318a81e4
+run_name: gradient_boosting_20260214_212636
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1771100796998
+status: 3
+tags: []
+user_id: Richard
