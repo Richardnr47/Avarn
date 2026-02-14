@@ -5,7 +5,7 @@ Pydantic schemas for API request/response validation.
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class StadEnum(str, Enum):
@@ -24,21 +24,33 @@ class StadEnum(str, Enum):
 class PredictionRequest(BaseModel):
     """Request schema for price prediction."""
 
-    antal_sektioner: int = Field(..., ge=1, le=50, description="Number of fire alarm sections")
+    antal_sektioner: int = Field(
+        ..., ge=1, le=50, description="Number of fire alarm sections"
+    )
     antal_detektorer: int = Field(..., ge=1, le=200, description="Number of detectors")
     antal_larmdon: int = Field(..., ge=1, le=100, description="Number of alarm devices")
-    dörrhållarmagneter: int = Field(..., ge=0, le=50, description="Number of door holder magnets")
-    ventilation: int = Field(..., ge=0, le=1, description="Ventilation system (0=no, 1=yes)")
+    dörrhållarmagneter: int = Field(
+        ..., ge=0, le=50, description="Number of door holder magnets"
+    )
+    ventilation: int = Field(
+        ..., ge=0, le=1, description="Ventilation system (0=no, 1=yes)"
+    )
     stad: StadEnum = Field(..., description="City")
-    kvartalsvis: int = Field(..., ge=0, le=1, description="Quarterly testing (0=no, 1=yes)")
+    kvartalsvis: int = Field(
+        ..., ge=0, le=1, description="Quarterly testing (0=no, 1=yes)"
+    )
     månadsvis: int = Field(..., ge=0, le=1, description="Monthly testing (0=no, 1=yes)")
     årsvis: int = Field(..., ge=0, le=1, description="Yearly testing (0=no, 1=yes)")
 
-    @validator("kvartalsvis", "månadsvis", "årsvis")
-    def validate_frequency(cls, v, values):
+    @model_validator(mode="after")
+    def validate_frequency(self):
         """Ensure exactly one frequency is selected."""
-        # This will be checked in the endpoint
-        return v
+        total = self.kvartalsvis + self.månadsvis + self.årsvis
+        if total != 1:
+            raise ValueError(
+                "Exactly one frequency must be selected (kvartalsvis, månadsvis, or årsvis)"
+            )
+        return self
 
     class Config:
         json_schema_extra = {
@@ -67,7 +79,9 @@ class PredictionResponse(BaseModel):
         None, description="Upper bound of confidence interval"
     )
     model_version: str = Field(..., description="Model version used for prediction")
-    feature_pipeline_version: str = Field(..., description="Feature pipeline version used")
+    feature_pipeline_version: str = Field(
+        ..., description="Feature pipeline version used"
+    )
     prediction_id: str = Field(..., description="Unique prediction ID for tracking")
 
     class Config:
@@ -108,16 +122,37 @@ class BatchPredictionRequest(BaseModel):
         }
 
 
+class BatchPredictionError(BaseModel):
+    """Error information for a failed batch prediction item."""
+
+    index: int = Field(..., description="Index of the item that failed")
+    detail: str = Field(..., description="Error message")
+
+
 class BatchPredictionResponse(BaseModel):
     """Response schema for batch predictions."""
 
-    predictions: List[PredictionResponse]
-    total_items: int
-    model_version: str
+    predictions: List[PredictionResponse] = Field(
+        default_factory=list, description="Successful predictions"
+    )
+    errors: List[BatchPredictionError] = Field(
+        default_factory=list, description="Errors for failed items"
+    )
+    total_items: int = Field(..., description="Total number of items processed")
+    successful: int = Field(..., description="Number of successful predictions")
+    failed: int = Field(..., description="Number of failed predictions")
+    model_version: str = Field(..., description="Model version used")
 
     class Config:
         json_schema_extra = {
-            "example": {"predictions": [], "total_items": 1, "model_version": "v1.0"}
+            "example": {
+                "predictions": [],
+                "errors": [],
+                "total_items": 1,
+                "successful": 1,
+                "failed": 0,
+                "model_version": "v1.0",
+            }
         }
 
 

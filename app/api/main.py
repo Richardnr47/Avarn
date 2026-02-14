@@ -4,18 +4,13 @@ Production-ready API with validation, monitoring, and error handling.
 """
 
 import logging
-import sys
 import uuid
 from datetime import datetime
-from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-# Add parent directory to path
-sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from app.api.schemas import (
     BatchPredictionRequest,
@@ -96,14 +91,7 @@ async def predict(request: PredictionRequest):
     Predict fire alarm testing price for a single request.
     """
     try:
-        # Validate frequency (exactly one must be selected)
-        frequency_sum = request.kvartalsvis + request.månadsvis + request.årsvis
-        if frequency_sum != 1:
-            raise HTTPException(
-                status_code=400,
-                detail="Exactly one frequency must be selected (kvartalsvis, månadsvis, or årsvis)",
-            )
-
+        # Frequency validation is now handled in schema (root_validator)
         # Generate prediction ID
         prediction_id = f"pred_{uuid.uuid4().hex[:10]}"
 
@@ -144,52 +132,62 @@ async def predict(request: PredictionRequest):
 async def predict_batch(request: BatchPredictionRequest):
     """
     Predict prices for multiple requests in batch.
+    Returns both successful predictions and errors for failed items.
     """
-    try:
-        predictions = []
+    from app.api.schemas import BatchPredictionError
 
-        for item in request.items:
-            # Validate frequency
-            frequency_sum = item.kvartalsvis + item.månadsvis + item.årsvis
-            if frequency_sum != 1:
-                continue  # Skip invalid items
+    predictions = []
+    errors = []
 
+    for index, item in enumerate(request.items):
+        try:
+            # Frequency validation is handled in schema (root_validator)
+            # If validation fails, Pydantic will raise ValidationError
             prediction_id = f"pred_{uuid.uuid4().hex[:10]}"
             # Use conformal prediction for confidence intervals
             prediction, lower, upper = model_loader.predict_with_interval(
                 item.dict(), confidence=0.90
             )
 
-            predictions.append(
-                PredictionResponse(
-                    predicted_price=round(prediction, 2),
-                    confidence_interval_lower=round(lower, 2),
-                    confidence_interval_upper=round(upper, 2),
-                    model_version=model_loader.get_model_version(),
-                    feature_pipeline_version=model_loader.get_pipeline_version(),
-                    prediction_id=prediction_id,
-                )
+            response = PredictionResponse(
+                predicted_price=round(prediction, 2),
+                confidence_interval_lower=round(lower, 2),
+                confidence_interval_upper=round(upper, 2),
+                model_version=model_loader.get_model_version(),
+                feature_pipeline_version=model_loader.get_pipeline_version(),
+                prediction_id=prediction_id,
             )
+
+            predictions.append(response)
 
             # Log each prediction
             prediction_logger.log_prediction(
                 prediction_id=prediction_id,
                 request=item.dict(),
-                response=predictions[-1].dict(),
+                response=response.dict(),
                 timestamp=datetime.now(),
             )
 
-        logger.info(f"Batch prediction: {len(predictions)} predictions made")
+        except Exception as e:
+            # Capture error for this item
+            error_detail = str(e)
+            if hasattr(e, "detail"):
+                error_detail = e.detail
+            errors.append(BatchPredictionError(index=index, detail=error_detail))
+            logger.warning(f"Batch item {index} failed: {error_detail}")
 
-        return BatchPredictionResponse(
-            predictions=predictions,
-            total_items=len(predictions),
-            model_version=model_loader.get_model_version(),
-        )
+    logger.info(
+        f"Batch prediction: {len(predictions)} successful, {len(errors)} failed"
+    )
 
-    except Exception as e:
-        logger.error(f"Batch prediction error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Batch prediction failed: {str(e)}")
+    return BatchPredictionResponse(
+        predictions=predictions,
+        errors=errors,
+        total_items=len(request.items),
+        successful=len(predictions),
+        failed=len(errors),
+        model_version=model_loader.get_model_version(),
+    )
 
 
 @app.exception_handler(Exception)
@@ -200,4 +198,6 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.api.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
+    uvicorn.run(
+        "app.api.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
+    )

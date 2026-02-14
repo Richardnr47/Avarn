@@ -85,7 +85,9 @@ def plot_feature_importance(importance_dict, output_path=None):
     colors = plt.cm.viridis(np.linspace(0, 1, len(features)))
     bars = ax1.barh(features, importances, color=colors)
     ax1.set_xlabel("Importance Score", fontsize=12)
-    ax1.set_title("Feature Importance (Horizontal Bar Chart)", fontsize=14, fontweight="bold")
+    ax1.set_title(
+        "Feature Importance (Horizontal Bar Chart)", fontsize=14, fontweight="bold"
+    )
     ax1.grid(True, alpha=0.3, axis="x")
 
     # Add value labels
@@ -109,9 +111,15 @@ def plot_feature_importance(importance_dict, output_path=None):
 
     colors_pie = plt.cm.Set3(np.linspace(0, 1, len(pie_features)))
     wedges, texts, autotexts = ax2.pie(
-        pie_importances, labels=pie_features, autopct="%1.1f%%", colors=colors_pie, startangle=90
+        pie_importances,
+        labels=pie_features,
+        autopct="%1.1f%%",
+        colors=colors_pie,
+        startangle=90,
     )
-    ax2.set_title(f"Feature Importance Distribution (Top {top_n})", fontsize=14, fontweight="bold")
+    ax2.set_title(
+        f"Feature Importance Distribution (Top {top_n})", fontsize=14, fontweight="bold"
+    )
 
     # Improve text readability
     for autotext in autotexts:
@@ -236,7 +244,9 @@ def main():
 
     # Load model and preprocessor
     print("Loading model and preprocessor...")
-    model, model_name, feature_names = load_model_and_preprocessor(model_path, preprocessor_path)
+    model, model_name, feature_names = load_model_and_preprocessor(
+        model_path, preprocessor_path
+    )
     print(f"Loaded model: {model_name}")
     print(f"Features: {len(feature_names)}")
 

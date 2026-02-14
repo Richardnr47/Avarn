@@ -3,15 +3,9 @@ Streamlit UI for Fire Alarm Testing Price Prediction.
 Production-ready web interface.
 """
 
-import sys
-from pathlib import Path
-
 import pandas as pd
 import requests
 import streamlit as st
-
-# Add parent to path
-sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from app.config import Config
 
@@ -59,7 +53,9 @@ def check_api_health():
     """Check if API is available."""
     try:
         response = requests.get(f"{API_URL}/health", timeout=2)
-        return response.status_code == 200, response.json() if response.status_code == 200 else None
+        return response.status_code == 200, (
+            response.json() if response.status_code == 200 else None
+        )
     except:
         return False, None
 
@@ -95,7 +91,9 @@ def main():
             st.success("✅ API är online")
             if health_data:
                 st.caption(f"Model: {health_data.get('model_version', 'N/A')}")
-                st.caption(f"Pipeline: {health_data.get('feature_pipeline_version', 'N/A')}")
+                st.caption(
+                    f"Pipeline: {health_data.get('feature_pipeline_version', 'N/A')}"
+                )
         else:
             st.error("❌ API är offline")
             st.info("Kontrollera att API:et körs på http://localhost:8000")
@@ -119,7 +117,9 @@ def main():
         st.markdown("**Powered by:** MLflow + FastAPI + Streamlit")
 
     # Main content
-    tab1, tab2, tab3 = st.tabs(["🎯 Prediktion", "📊 Batch Prediktion", "ℹ️ Om Systemet"])
+    tab1, tab2, tab3 = st.tabs(
+        ["🎯 Prediktion", "📊 Batch Prediktion", "ℹ️ Om Systemet"]
+    )
 
     with tab1:
         st.header("Enskild Prisprediktion")
@@ -224,7 +224,9 @@ def main():
                         prediction_id = result.get("prediction_id", "N/A")
 
                         # Display prediction
-                        st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
+                        st.markdown(
+                            '<div class="prediction-box">', unsafe_allow_html=True
+                        )
                         st.metric(
                             "Predikterat Pris",
                             f"{predicted_price:,.0f} SEK",
@@ -246,7 +248,9 @@ def main():
 
                         # Model info
                         with st.expander("ℹ️ Modellinformation"):
-                            st.write(f"**Modellversion:** {result.get('model_version', 'N/A')}")
+                            st.write(
+                                f"**Modellversion:** {result.get('model_version', 'N/A')}"
+                            )
                             st.write(
                                 f"**Pipeline-version:** {result.get('feature_pipeline_version', 'N/A')}"
                             )
@@ -254,7 +258,9 @@ def main():
 
                         st.success("✅ Prediktion genomförd!")
                     else:
-                        error_msg = result.get("detail", result.get("error", "Okänt fel"))
+                        error_msg = result.get(
+                            "detail", result.get("error", "Okänt fel")
+                        )
                         st.error(f"❌ Fel: {error_msg}")
 
     with tab2:
@@ -281,10 +287,16 @@ def main():
                         for _, row in df.iterrows():
                             items.append(
                                 {
-                                    "antal_sektioner": int(row.get("antal_sektioner", 0)),
-                                    "antal_detektorer": int(row.get("antal_detektorer", 0)),
+                                    "antal_sektioner": int(
+                                        row.get("antal_sektioner", 0)
+                                    ),
+                                    "antal_detektorer": int(
+                                        row.get("antal_detektorer", 0)
+                                    ),
                                     "antal_larmdon": int(row.get("antal_larmdon", 0)),
-                                    "dörrhållarmagneter": int(row.get("dörrhållarmagneter", 0)),
+                                    "dörrhållarmagneter": int(
+                                        row.get("dörrhållarmagneter", 0)
+                                    ),
                                     "ventilation": int(row.get("ventilation", 0)),
                                     "stad": str(row.get("stad", "Stockholm")),
                                     "kvartalsvis": int(row.get("kvartalsvis", 0)),
@@ -296,7 +308,9 @@ def main():
                         with st.spinner("Bearbetar batch-prediktion..."):
                             try:
                                 response = requests.post(
-                                    f"{API_URL}/predict/batch", json={"items": items}, timeout=30
+                                    f"{API_URL}/predict/batch",
+                                    json={"items": items},
+                                    timeout=30,
                                 )
 
                                 if response.status_code == 200:
@@ -309,10 +323,12 @@ def main():
                                         p["predicted_price"] for p in predictions
                                     ]
                                     results_df["nedre_gräns"] = [
-                                        p.get("confidence_interval_lower", 0) for p in predictions
+                                        p.get("confidence_interval_lower", 0)
+                                        for p in predictions
                                     ]
                                     results_df["övre_gräns"] = [
-                                        p.get("confidence_interval_upper", 0) for p in predictions
+                                        p.get("confidence_interval_upper", 0)
+                                        for p in predictions
                                     ]
 
                                     st.dataframe(results_df, use_container_width=True)
@@ -326,7 +342,9 @@ def main():
                                         "text/csv",
                                     )
 
-                                    st.success(f"✅ {len(predictions)} prediktioner genomförda!")
+                                    st.success(
+                                        f"✅ {len(predictions)} prediktioner genomförda!"
+                                    )
                                 else:
                                     st.error(f"Fel: {response.json()}")
                             except Exception as e:

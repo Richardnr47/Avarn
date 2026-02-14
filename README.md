@@ -1,6 +1,6 @@
 # Avarn Fire Alarm Testing Price Prediction System
 
-Production-ready ML system for predicting fire alarm testing prices. Built with FastAPI, scikit-learn, MLflow, and Streamlit.
+Deployment-ready ML system for predicting fire alarm testing prices. A production-inspired reference implementation built with FastAPI, scikit-learn, MLflow, and Streamlit.
 
 ## 🎯 Why This Project Matters
 

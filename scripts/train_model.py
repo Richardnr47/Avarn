@@ -27,8 +27,12 @@ class ModelTrainer:
             "linear_regression": LinearRegression(),
             "ridge": Ridge(alpha=1.0),
             "lasso": Lasso(alpha=1.0),
-            "random_forest": RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1),
-            "gradient_boosting": GradientBoostingRegressor(n_estimators=100, random_state=42),
+            "random_forest": RandomForestRegressor(
+                n_estimators=100, random_state=42, n_jobs=-1
+            ),
+            "gradient_boosting": GradientBoostingRegressor(
+                n_estimators=100, random_state=42
+            ),
             "svr": SVR(kernel="rbf", C=100, gamma="scale"),
         }
         self.trained_models = {}
@@ -148,7 +152,9 @@ class ModelTrainer:
 
 def main():
     """Main training function."""
-    parser = argparse.ArgumentParser(description="Train fire alarm testing price prediction models")
+    parser = argparse.ArgumentParser(
+        description="Train fire alarm testing price prediction models"
+    )
     parser.add_argument(
         "--data",
         type=str,
@@ -156,10 +162,16 @@ def main():
         help="Path to training data CSV file",
     )
     parser.add_argument(
-        "--output", type=str, default="../models", help="Directory to save models and results"
+        "--output",
+        type=str,
+        default="../models",
+        help="Directory to save models and results",
     )
     parser.add_argument(
-        "--test-size", type=float, default=0.2, help="Proportion of data to use for testing"
+        "--test-size",
+        type=float,
+        default=0.2,
+        help="Proportion of data to use for testing",
     )
     parser.add_argument(
         "--random-state", type=int, default=42, help="Random seed for reproducibility"

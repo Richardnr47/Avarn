@@ -64,7 +64,9 @@ class FeaturePipeline:
         self.metadata["feature_columns"] = self.feature_columns
 
         # Identify numeric and categorical features
-        numeric_cols = df[self.feature_columns].select_dtypes(include=[np.number]).columns.tolist()
+        numeric_cols = (
+            df[self.feature_columns].select_dtypes(include=[np.number]).columns.tolist()
+        )
         categorical_cols = (
             df[self.feature_columns].select_dtypes(include=["object"]).columns.tolist()
         )
@@ -86,7 +88,9 @@ class FeaturePipeline:
             transformers.append(
                 (
                     "cat",
-                    OneHotEncoder(drop="first", sparse_output=False, handle_unknown="ignore"),
+                    OneHotEncoder(
+                        drop="first", sparse_output=False, handle_unknown="ignore"
+                    ),
                     categorical_cols,
                 )
             )
@@ -143,9 +147,17 @@ class FeaturePipeline:
                 for df_col in df.columns:
                     # Normalize both for comparison
                     norm_expected = (
-                        expected_col.lower().replace("ö", "o").replace("ä", "a").replace("å", "a")
+                        expected_col.lower()
+                        .replace("ö", "o")
+                        .replace("ä", "a")
+                        .replace("å", "a")
                     )
-                    norm_df = df_col.lower().replace("ö", "o").replace("ä", "a").replace("å", "a")
+                    norm_df = (
+                        df_col.lower()
+                        .replace("ö", "o")
+                        .replace("ä", "a")
+                        .replace("å", "a")
+                    )
                     if norm_expected == norm_df:
                         column_mapping[expected_col] = df_col
                         found = True
@@ -183,7 +195,9 @@ class FeaturePipeline:
             for name, transformer, cols in self.preprocessor.transformers_:
                 if name == "cat" and hasattr(transformer, "get_feature_names_out"):
                     # Get OneHot encoded feature names
-                    cat_names = transformer.get_feature_names_out(self.categorical_features)
+                    cat_names = transformer.get_feature_names_out(
+                        self.categorical_features
+                    )
                     feature_names.extend(cat_names)
 
         # If we couldn't get feature names, use default
@@ -191,7 +205,9 @@ class FeaturePipeline:
             feature_names = [f"feature_{i}" for i in range(X_transformed.shape[1])]
 
         # Convert to DataFrame
-        df_transformed = pd.DataFrame(X_transformed, columns=feature_names, index=X.index)
+        df_transformed = pd.DataFrame(
+            X_transformed, columns=feature_names, index=X.index
+        )
 
         return df_transformed, target
 
@@ -228,7 +244,9 @@ class FeaturePipeline:
         # Handle backward compatibility with old format
         if "preprocessor" not in pipeline_data:
             # Old format with scaler and label_encoders - would need migration
-            raise ValueError("Old pipeline format detected. Please retrain with new pipeline.")
+            raise ValueError(
+                "Old pipeline format detected. Please retrain with new pipeline."
+            )
 
         # Fix encoding issues with Swedish characters
         # When pickle saves/loads, encoding can get corrupted
@@ -256,7 +274,9 @@ class FeaturePipeline:
             # Try to match against correct columns
             matched = False
             for correct_col in correct_columns:
-                correct_normalized = "".join(c for c in correct_col.lower() if c.isalnum())
+                correct_normalized = "".join(
+                    c for c in correct_col.lower() if c.isalnum()
+                )
                 if col_normalized == correct_normalized:
                     fixed_columns.append(correct_col)
                     matched = True

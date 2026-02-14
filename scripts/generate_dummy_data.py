@@ -72,13 +72,17 @@ def generate_dummy_data(n_samples=200):
         # Antal detektorer (number of detectors)
         # Correlated with sections, typically 2-5 detectors per section
         detectors_per_section = np.random.uniform(2.5, 5.5)
-        antal_detektorer = int(antal_sektioner * detectors_per_section) + np.random.randint(-2, 3)
+        antal_detektorer = int(
+            antal_sektioner * detectors_per_section
+        ) + np.random.randint(-2, 3)
         antal_detektorer = max(2, antal_detektorer)  # Minimum 2 detectors
 
         # Antal larmdon (number of alarm devices)
         # Typically 1-3 per section (alarm bells, sirens, etc.)
         larmdon_per_section = np.random.uniform(1.5, 3.5)
-        antal_larmdon = int(antal_sektioner * larmdon_per_section) + np.random.randint(-1, 2)
+        antal_larmdon = int(antal_sektioner * larmdon_per_section) + np.random.randint(
+            -1, 2
+        )
         antal_larmdon = max(1, antal_larmdon)  # Minimum 1 alarm device
 
         # Stad (city)
@@ -87,11 +91,17 @@ def generate_dummy_data(n_samples=200):
         # Frequency (kvartalsvis, månadsvis, årsvis) - mutually exclusive
         # Larger systems more likely to have more frequent testing
         if antal_sektioner >= 10:
-            frequency = np.random.choice(["månadsvis", "kvartalsvis", "årsvis"], p=[0.4, 0.4, 0.2])
+            frequency = np.random.choice(
+                ["månadsvis", "kvartalsvis", "årsvis"], p=[0.4, 0.4, 0.2]
+            )
         elif antal_sektioner >= 5:
-            frequency = np.random.choice(["månadsvis", "kvartalsvis", "årsvis"], p=[0.2, 0.5, 0.3])
+            frequency = np.random.choice(
+                ["månadsvis", "kvartalsvis", "årsvis"], p=[0.2, 0.5, 0.3]
+            )
         else:
-            frequency = np.random.choice(["månadsvis", "kvartalsvis", "årsvis"], p=[0.1, 0.3, 0.6])
+            frequency = np.random.choice(
+                ["månadsvis", "kvartalsvis", "årsvis"], p=[0.1, 0.3, 0.6]
+            )
 
         # Set frequency flags (mutually exclusive)
         kvartalsvis = 1 if frequency == "kvartalsvis" else 0
@@ -118,7 +128,9 @@ def generate_dummy_data(n_samples=200):
 
         # Calculate base price with realistic relationships
         # Base price depends on sections, detectors, and alarm devices
-        base_price = (antal_sektioner * 2000) + (antal_detektorer * 300) + (antal_larmdon * 500)
+        base_price = (
+            (antal_sektioner * 2000) + (antal_detektorer * 300) + (antal_larmdon * 500)
+        )
 
         # Add cost for door holder magnets
         base_price += dörrhållarmagneter * 400

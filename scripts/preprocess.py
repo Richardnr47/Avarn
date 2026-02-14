@@ -77,7 +77,8 @@ class DataPreprocessor:
         for col in categorical_cols:
             if df[col].isnull().sum() > 0:
                 df[col].fillna(
-                    df[col].mode()[0] if len(df[col].mode()) > 0 else "Unknown", inplace=True
+                    df[col].mode()[0] if len(df[col].mode()) > 0 else "Unknown",
+                    inplace=True,
                 )
                 print(f"Filled missing values in {col} with mode")
 
@@ -115,13 +116,17 @@ class DataPreprocessor:
             transformers.append(
                 (
                     "cat",
-                    OneHotEncoder(drop="first", sparse_output=False, handle_unknown="ignore"),
+                    OneHotEncoder(
+                        drop="first", sparse_output=False, handle_unknown="ignore"
+                    ),
                     categorical_cols,
                 )
             )
 
         if transformers:
-            preprocessor = ColumnTransformer(transformers=transformers, remainder="drop")
+            preprocessor = ColumnTransformer(
+                transformers=transformers, remainder="drop"
+            )
             if fit:
                 preprocessor.fit(df)
             return preprocessor, numeric_cols, categorical_cols
@@ -179,7 +184,9 @@ class DataPreprocessor:
         if self.categorical_features and hasattr(self.preprocessor, "transformers_"):
             for name, transformer, cols in self.preprocessor.transformers_:
                 if name == "cat" and hasattr(transformer, "get_feature_names_out"):
-                    cat_names = transformer.get_feature_names_out(self.categorical_features)
+                    cat_names = transformer.get_feature_names_out(
+                        self.categorical_features
+                    )
                     feature_names.extend(cat_names)
 
         # If we couldn't get feature names, use default
@@ -232,10 +239,14 @@ class DataPreprocessor:
             # New format with ColumnTransformer
             self.preprocessor = preprocessor_data["preprocessor"]
             self.numeric_features = preprocessor_data.get("numeric_features", [])
-            self.categorical_features = preprocessor_data.get("categorical_features", [])
+            self.categorical_features = preprocessor_data.get(
+                "categorical_features", []
+            )
         else:
             # Old format - would need migration
-            raise ValueError("Old preprocessor format detected. Please retrain with new pipeline.")
+            raise ValueError(
+                "Old preprocessor format detected. Please retrain with new pipeline."
+            )
 
         self.feature_columns = preprocessor_data["feature_columns"]
         self.target_column = preprocessor_data.get("target_column", "price")

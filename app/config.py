@@ -23,21 +23,35 @@ class Config:
 
     # MLflow Configuration
     MLFLOW_TRACKING_URI: str = os.getenv("MLFLOW_TRACKING_URI", "./models/mlruns")
-    MLFLOW_EXPERIMENT_NAME: str = os.getenv("MLFLOW_EXPERIMENT_NAME", "fire_alarm_price_prediction")
+    MLFLOW_EXPERIMENT_NAME: str = os.getenv(
+        "MLFLOW_EXPERIMENT_NAME", "fire_alarm_price_prediction"
+    )
 
     # Paths
     # config.py is at app/config.py, so parent.parent is project root (not parent.parent.parent)
     PROJECT_ROOT: Path = Path(__file__).parent.parent
-    
+
     # Handle MODELS_DIR: if absolute path, use as-is; if relative, join with PROJECT_ROOT
     models_dir_env = os.getenv("MODELS_DIR", "models")
-    MODELS_DIR: Path = Path(models_dir_env) if Path(models_dir_env).is_absolute() else PROJECT_ROOT / models_dir_env
-    
+    MODELS_DIR: Path = (
+        Path(models_dir_env)
+        if Path(models_dir_env).is_absolute()
+        else PROJECT_ROOT / models_dir_env
+    )
+
     data_dir_env = os.getenv("DATA_DIR", "data")
-    DATA_DIR: Path = Path(data_dir_env) if Path(data_dir_env).is_absolute() else PROJECT_ROOT / data_dir_env
-    
+    DATA_DIR: Path = (
+        Path(data_dir_env)
+        if Path(data_dir_env).is_absolute()
+        else PROJECT_ROOT / data_dir_env
+    )
+
     log_dir_env = os.getenv("LOG_DIR", "logs")
-    LOG_DIR: Path = Path(log_dir_env) if Path(log_dir_env).is_absolute() else PROJECT_ROOT / log_dir_env
+    LOG_DIR: Path = (
+        Path(log_dir_env)
+        if Path(log_dir_env).is_absolute()
+        else PROJECT_ROOT / log_dir_env
+    )
 
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")

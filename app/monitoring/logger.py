@@ -4,7 +4,7 @@ Prediction logging and monitoring.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict
 
@@ -106,6 +106,9 @@ class PredictionLogger:
             with open(json_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
+            # Log rotation: keep only last 30 days of JSONL files
+            self._rotate_logs(days_to_keep=30)
+
             logger.debug(f"Logged prediction: {prediction_id}")
 
         except Exception as e:
@@ -149,3 +152,24 @@ class PredictionLogger:
         except Exception as e:
             logger.error(f"Failed to get prediction stats: {e}")
             return {"error": str(e)}
+
+    def _rotate_logs(self, days_to_keep: int = 30) -> None:
+        """
+        Rotate log files, keeping only the last N days.
+
+        Args:
+            days_to_keep: Number of days of logs to keep
+        """
+        try:
+            cutoff_date = datetime.now() - timedelta(days=days_to_keep)
+            cutoff_str = cutoff_date.strftime("%Y-%m-%d")
+
+            for log_file in self.log_dir.glob("predictions_*.jsonl"):
+                # Extract date from filename: predictions_YYYY-MM-DD.jsonl
+                date_str = log_file.stem.split("_")[-1]
+                if date_str < cutoff_str:
+                    log_file.unlink()
+                    logger.debug(f"Rotated old log file: {log_file.name}")
+
+        except Exception as e:
+            logger.warning(f"Failed to rotate logs: {e}")

@@ -90,7 +90,10 @@ def main():
     """Main prediction function."""
     parser = argparse.ArgumentParser(description="Predict fire alarm testing prices")
     parser.add_argument(
-        "--model", type=str, default="../models/best_model.pkl", help="Path to trained model file"
+        "--model",
+        type=str,
+        default="../models/best_model.pkl",
+        help="Path to trained model file",
     )
     parser.add_argument(
         "--preprocessor",

@@ -1,0 +1,40 @@
+# Pinned dependencies for reproducible builds
+# Generated from requirements.txt with exact versions
+
+# Core ML & Data
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0
+
+# Visualization (for analysis)
+matplotlib==3.9.0
+seaborn==0.13.2
+
+# API Framework
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
+
+# MLOps & Model Management
+mlflow==2.14.1
+xgboost==2.1.0
+lightgbm==4.5.0
+
+# Monitoring & Logging
+python-json-logger==3.2.1
+
+# Utilities
+python-dotenv==1.0.1
+
+# UI Framework
+streamlit==1.39.0
+requests==2.32.3
+
+# Testing
+pytest==8.3.3
+httpx==0.27.2
+
+# Code Quality
+black==24.8.0
+isort==5.13.2
+ruff==0.6.9

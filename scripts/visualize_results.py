@@ -40,7 +40,9 @@ def plot_model_comparison(results, output_dir="../models"):
     ax1 = axes[0, 0]
     x = range(len(models))
     width = 0.35
-    ax1.bar([i - width / 2 for i in x], train_rmse, width, label="Train RMSE", alpha=0.8)
+    ax1.bar(
+        [i - width / 2 for i in x], train_rmse, width, label="Train RMSE", alpha=0.8
+    )
     ax1.bar([i + width / 2 for i in x], test_rmse, width, label="Test RMSE", alpha=0.8)
     ax1.set_xlabel("Models")
     ax1.set_ylabel("RMSE")
@@ -91,7 +93,8 @@ def plot_model_comparison(results, output_dir="../models"):
     ax4 = axes[1, 1]
     overfit_ratio = [test_rmse[i] / train_rmse[i] for i in range(len(models))]
     colors_overfit = [
-        "green" if ratio < 1.2 else "orange" if ratio < 2 else "red" for ratio in overfit_ratio
+        "green" if ratio < 1.2 else "orange" if ratio < 2 else "red"
+        for ratio in overfit_ratio
     ]
     bars = ax4.bar(models, overfit_ratio, color=colors_overfit, alpha=0.7)
     ax4.set_xlabel("Models")
@@ -130,7 +133,14 @@ def create_results_table(results, output_dir="../models"):
     df = pd.DataFrame(results).T
 
     # Reorder columns
-    column_order = ["train_rmse", "test_rmse", "train_mae", "test_mae", "train_r2", "test_r2"]
+    column_order = [
+        "train_rmse",
+        "test_rmse",
+        "train_mae",
+        "test_mae",
+        "train_r2",
+        "test_r2",
+    ]
     df = df[column_order]
 
     # Round values
@@ -145,7 +155,9 @@ def create_results_table(results, output_dir="../models"):
     print("=" * 80)
     print(df.to_string())
     print("\n" + "=" * 80)
-    print(f"Best Model: {best_model} (Lowest Test RMSE: {df.loc[best_model, 'test_rmse']:.2f})")
+    print(
+        f"Best Model: {best_model} (Lowest Test RMSE: {df.loc[best_model, 'test_rmse']:.2f})"
+    )
     print("=" * 80)
 
     # Save to CSV
