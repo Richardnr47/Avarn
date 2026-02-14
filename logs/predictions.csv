@@ -1,0 +1,2 @@
+prediction_id,timestamp,predicted_price,antal_sektioner,antal_detektorer,antal_larmdon,dörrhållarmagneter,ventilation,stad,kvartalsvis,månadsvis,årsvis,model_version,pipeline_version
+pred_a791ae40bd,2026-02-14T20:01:30.062704,46734.39,8,25,15,5,1,Stockholm,0,1,0,gradient_boosting,v1.0

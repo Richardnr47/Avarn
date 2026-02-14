@@ -1,0 +1,28 @@
+{
+  "data": {
+    "training_file": "data/training_data.csv",
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "models": {
+    "output_dir": "models",
+    "save_all_models": true,
+    "save_best_model": true
+  },
+  "preprocessing": {
+    "target_column": "price",
+    "handle_missing": true,
+    "scale_features": true,
+    "encode_categorical": true
+  },
+  "training": {
+    "algorithms": [
+      "linear_regression",
+      "ridge",
+      "lasso",
+      "random_forest",
+      "gradient_boosting",
+      "svr"
+    ]
+  }
+}

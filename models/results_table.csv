@@ -1,0 +1,7 @@
+,train_rmse,test_rmse,train_mae,test_mae,train_r2,test_r2,best
+linear_regression,1169.47,1334.37,963.31,1021.96,0.99,0.91,False
+ridge,1268.09,1249.21,1027.85,1163.35,0.99,0.92,True
+lasso,1169.49,1340.27,962.33,1024.4,0.99,0.91,False
+random_forest,892.14,1869.69,742.19,1410.0,0.99,0.83,False
+gradient_boosting,0.77,1618.84,0.66,1383.13,1.0,0.87,False
+svr,11510.5,7514.87,10351.45,6090.25,0.04,-1.8,False

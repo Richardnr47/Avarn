@@ -1,0 +1,62 @@
+{
+  "feature_importance": {
+    "antal_sektioner": 0.7551071467793119,
+    "antal_detektorer": 0.05573310190082326,
+    "kvartalsvis": 2.9703583955170153e-06,
+    "månadsvis": 0.04886058245393088,
+    "årsvis": 0.013320326044332852,
+    "stad": 0.012683970192313248,
+    "dörrhållarmagneter": 0.00403560636302446,
+    "ventilation": 0.00042859475605933354,
+    "antal_larmdon": 0.10982770115180855
+  },
+  "sorted_features": [
+    {
+      "feature": "antal_sektioner",
+      "importance": 0.7551071467793119,
+      "percentage": 75.51071467793119
+    },
+    {
+      "feature": "antal_larmdon",
+      "importance": 0.10982770115180855,
+      "percentage": 10.982770115180855
+    },
+    {
+      "feature": "antal_detektorer",
+      "importance": 0.05573310190082326,
+      "percentage": 5.573310190082326
+    },
+    {
+      "feature": "månadsvis",
+      "importance": 0.04886058245393088,
+      "percentage": 4.886058245393087
+    },
+    {
+      "feature": "årsvis",
+      "importance": 0.013320326044332852,
+      "percentage": 1.3320326044332853
+    },
+    {
+      "feature": "stad",
+      "importance": 0.012683970192313248,
+      "percentage": 1.2683970192313248
+    },
+    {
+      "feature": "dörrhållarmagneter",
+      "importance": 0.00403560636302446,
+      "percentage": 0.403560636302446
+    },
+    {
+      "feature": "ventilation",
+      "importance": 0.00042859475605933354,
+      "percentage": 0.04285947560593335
+    },
+    {
+      "feature": "kvartalsvis",
+      "importance": 2.9703583955170153e-06,
+      "percentage": 0.0002970358395517015
+    }
+  ],
+  "total_features": 9,
+  "total_importance": 1.0
+}

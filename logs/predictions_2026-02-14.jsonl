@@ -1,0 +1,1 @@
+{"prediction_id": "pred_a791ae40bd", "timestamp": "2026-02-14T20:01:30.062704", "predicted_price": 46734.39, "antal_sektioner": 8, "antal_detektorer": 25, "antal_larmdon": 15, "dörrhållarmagneter": 5, "ventilation": 1, "stad": "Stockholm", "kvartalsvis": 0, "månadsvis": 1, "årsvis": 0, "model_version": "gradient_boosting", "pipeline_version": "v1.0"}
