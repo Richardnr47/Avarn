@@ -5,12 +5,12 @@ Usage: python start_mlflow_ui.py
 
 import subprocess
 import sys
-from pathlib import Path
+
+from app.config import Config
 
 if __name__ == "__main__":
-    # Get project root
-    project_root = Path(__file__).parent
-    mlruns_path = project_root / "models" / "mlruns"
+    # Get MLruns path from config
+    mlruns_path = Config.MODELS_DIR / "mlruns"
     
     # Check if mlruns directory exists
     if not mlruns_path.exists():
@@ -23,9 +23,8 @@ if __name__ == "__main__":
     print("\nOpen in browser: http://localhost:5000")
     print("Press CTRL+C to stop\n")
     
-    # Start MLflow UI
-    # Use file:// prefix for Windows paths - convert backslashes to forward slashes
-    mlruns_uri = f"file:///{str(mlruns_path.absolute()).replace(chr(92), '/')}"
+    # Get URI from config
+    mlruns_uri = Config.get_mlflow_uri()
     
     print(f"Using URI: {mlruns_uri}\n")
     

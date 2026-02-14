@@ -72,7 +72,7 @@ pip install -r requirements.txt
 python app/models/train_with_mlflow.py
 ```
 
-### 2. Start API (10 seconds)
+### 3. Start API (10 seconds)
 
 ```bash
 python run_api.py
@@ -80,13 +80,13 @@ python run_api.py
 
 **API**: `http://localhost:8000` | **Docs**: `http://localhost:8000/docs`
 
-### 3. Test It (5 seconds)
+### 4. Test It (5 seconds)
 
 ```bash
 curl http://localhost:8000/health
 ```
 
-### 4. Make a Prediction
+### 5. Make a Prediction
 
 ```bash
 curl -X POST "http://localhost:8000/predict" \
@@ -327,10 +327,116 @@ The project follows best practices:
 - ✅ **API documentation** (automatic OpenAPI/Swagger docs)
 - ✅ **Type safety** (Pydantic schemas throughout)
 
+## 💻 System Requirements
+
+- **Python**: 3.9+ (tested with 3.12)
+- **OS**: Windows, Linux, macOS
+- **Memory**: 2GB+ RAM recommended
+- **Disk**: ~500MB for dependencies + model artifacts
+
+## 🔧 Configuration
+
+The system uses environment variables for configuration. Copy `.env.example` to `.env` and customize:
+
+```bash
+cp .env.example .env
+```
+
+Key settings:
+- `API_HOST` / `API_PORT`: API server configuration
+- `CORS_ORIGINS`: Allowed CORS origins (comma-separated, or `*` for all)
+- `MLFLOW_TRACKING_URI`: MLflow tracking backend
+- `LOG_LEVEL`: Logging verbosity (DEBUG, INFO, WARNING, ERROR)
+
+## 🏗️ Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Training Pipeline                        │
+├─────────────────────────────────────────────────────────────┤
+│  Data → FeaturePipeline (OneHotEncoder) → Models → MLflow  │
+│                                                             │
+│  Output: models/best_model.pkl + preprocessor.pkl          │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Production Serving                         │
+├─────────────────────────────────────────────────────────────┤
+│  FastAPI → ModelLoader → FeaturePipeline → Prediction      │
+│     │                                                       │
+│     ├─→ Conformal Prediction Intervals                     │
+│     ├─→ Prediction Logging (JSONL)                        │
+│     └─→ Health Checks                                      │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      User Interface                         │
+├─────────────────────────────────────────────────────────────┤
+│  Streamlit UI → FastAPI → Predictions + Monitoring         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🐛 Troubleshooting
+
+### API won't start
+
+**Error**: `FileNotFoundError: models/best_model.pkl`
+
+**Solution**: Train the model first:
+```bash
+python app/models/train_with_mlflow.py
+```
+
+### Import errors
+
+**Error**: `ModuleNotFoundError: No module named 'app'`
+
+**Solution**: Run from project root directory, or install in development mode:
+```bash
+pip install -e .
+```
+
+### MLflow UI shows no runs
+
+**Error**: MLflow UI shows experiment but no runs
+
+**Solution**: Check MLflow tracking URI format. On Windows, ensure it uses `file:///` prefix:
+```bash
+python start_mlflow_ui.py
+```
+
+### Encoding issues with Swedish characters
+
+**Error**: `ValueError: Missing required features: {'drrhllarmagneter'}`
+
+**Solution**: The pipeline handles encoding automatically. If issues persist, retrain the model:
+```bash
+python app/models/train_with_mlflow.py
+```
+
+### Tests fail
+
+**Error**: `AttributeError: 'ModelLoader' object has no attribute 'predict_with_interval'`
+
+**Solution**: Ensure you have the latest code. The method exists in `app/models/model_loader.py` (line 173).
+
+### Port already in use
+
+**Error**: `Address already in use`
+
+**Solution**: Change port in `.env` or stop the existing process:
+```bash
+# Windows
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+```
+
 ## 📄 License
 
-[Your License Here]
+MIT License - see LICENSE file for details
 
 ## 👤 Author
 
-[Your Name/Organization]
+Richard - ML Systems Engineer

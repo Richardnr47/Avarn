@@ -3,12 +3,16 @@ Model loader for production inference.
 Handles model loading, versioning, and prediction.
 """
 
-import pickle
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from typing import Dict, Any, Optional
 import logging
+import pickle
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import numpy as np
+import pandas as pd
+
+from app.config import Config
+
 # MLflow imports removed - only used for training, not serving
 
 logger = logging.getLogger(__name__)
@@ -27,10 +31,10 @@ class ModelLoader:
         Initialize model loader.
         
         Args:
-            models_dir: Directory containing saved models
+            models_dir: Directory containing saved models (defaults to Config.MODELS_DIR)
         """
         if models_dir is None:
-            models_dir = Path(__file__).parent.parent.parent / "models"
+            models_dir = Config.MODELS_DIR
         
         self.models_dir = Path(models_dir)
         self.model = None

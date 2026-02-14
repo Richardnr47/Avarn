@@ -2,11 +2,12 @@
 Pytest configuration and fixtures for testing.
 """
 
+import sys
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from pathlib import Path
-import sys
-from unittest.mock import patch, MagicMock
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -32,13 +33,13 @@ def client(mock_model_loader):
     """Create a test client for the FastAPI app."""
     # Import app and mock the model loader before startup
     from app.api import main
-    
+
     # Mock the model loader
     main.model_loader = mock_model_loader
-    
+
     # Clear startup events to avoid loading model
     main.app.router.on_startup = []
-    
+
     return TestClient(main.app)
 
 
@@ -54,5 +55,5 @@ def sample_prediction_request():
         "stad": "Stockholm",
         "kvartalsvis": 0,
         "månadsvis": 1,
-        "årsvis": 0
+        "årsvis": 0,
     }

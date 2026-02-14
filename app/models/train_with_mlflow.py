@@ -3,17 +3,18 @@ Model training with MLflow integration.
 Tracks experiments, versions models, and stores artifacts.
 """
 
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
-from sklearn.linear_model import Ridge
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import sys
 import warnings
+from datetime import datetime
+from pathlib import Path
+
 import mlflow
 import mlflow.sklearn
-from pathlib import Path
-import sys
-from datetime import datetime
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
+from sklearn.linear_model import Ridge
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # Suppress MLflow deprecation warnings (they're internal to MLflow)
 warnings.filterwarnings('ignore', category=FutureWarning, module='mlflow')
@@ -21,6 +22,7 @@ warnings.filterwarnings('ignore', category=FutureWarning, module='mlflow')
 # Add parent to path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
+from app.config import Config
 from app.features.feature_pipeline import FeaturePipeline
 
 
@@ -55,7 +57,7 @@ def train_with_mlflow(
     # Load and prepare data
     print("Loading data...")
     import pandas as pd
-    
+
     # Load data
     df = pd.read_csv(data_path)
     print(f"Loaded {len(df)} records")
