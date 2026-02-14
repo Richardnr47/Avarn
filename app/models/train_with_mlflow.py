@@ -41,6 +41,16 @@ def train_with_mlflow(
         random_state: Random seed
     """
     # Set up MLflow
+    # Set tracking URI explicitly with file:// prefix for Windows
+    models_dir = Path(__file__).parent.parent.parent / "models"
+    mlruns_path = models_dir / "mlruns"
+    mlruns_path.mkdir(parents=True, exist_ok=True)
+    
+    # Convert to file:// URI format for Windows
+    mlruns_uri = f"file:///{str(mlruns_path.absolute()).replace(chr(92), '/')}"
+    mlflow.set_tracking_uri(mlruns_uri)
+    
+    # Set experiment (creates if doesn't exist)
     mlflow.set_experiment(experiment_name)
     
     # Load and prepare data

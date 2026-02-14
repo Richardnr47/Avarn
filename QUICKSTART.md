@@ -60,7 +60,22 @@ curl -X POST "http://localhost:8000/predict" \
 ### API Documentation
 Öppna i webbläsare: http://localhost:8000/docs
 
-## 5. Docker (Production)
+## 5. Starta Streamlit UI
+
+```bash
+# Starta API först (i en terminal)
+python run_api.py
+
+# Starta Streamlit UI (i en annan terminal)
+python run_streamlit.py
+
+# Eller direkt
+streamlit run app/ui/streamlit_app.py
+```
+
+Öppna: http://localhost:8501
+
+## 6. Docker (Production)
 
 ```bash
 # Bygg image
@@ -105,6 +120,7 @@ Prediction logs sparas i:
 - [ ] API startad
 - [ ] Health check fungerar
 - [ ] Test prediction gjord
+- [ ] Streamlit UI testad
 - [ ] Docker testad (valfritt)
 
 ---
