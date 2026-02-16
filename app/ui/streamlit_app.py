@@ -173,11 +173,6 @@ st.markdown(
         color: white;
     }
     
-    .stTabs [aria-selected="true"] {
-        background-color: #58C5CA;
-        color: black;
-    }
-    
     /* Dataframes */
     .dataframe {
         background-color: #2D2D2D;
@@ -269,16 +264,16 @@ def main():
 
     # Header
     st.markdown(
-        '<div class="main-header">Brandlarmsavtal</div>',
+        '<div class="main-header">Brandlarmsavtal FDP</div>',
         unsafe_allow_html=True,
     )
 
     # Sidebar
     with st.sidebar:
-        st.header("Information")
 
         st.markdown("""
-        Detta system predikterar priser för brandlarmstestning baserat på:
+        ## Information
+        Detta system predikterar priser för avtal på brandlarmsanläggningar där Schneider FDP är installerat baserat på:
         - Antal sektioner
         - Antal detektorer
         - Antal larmdon
@@ -287,22 +282,20 @@ def main():
         - Ytterligare utrustning
         """)
 
-        st.divider()
                 # API Health Check
         api_healthy, health_data = check_api_health()
         if api_healthy:
-            st.success("✅ API är online")
+            "✅ API är online"
         else:
-            st.error("❌ API är offline")
-            st.info("Kontrollera att API:et körs på http://localhost:8000")
+            "❌ API är offline"
+            "Kontrollera att API:et körs på http://localhost:8000"
 
     # Main content
     tab1, tab2, tab3 = st.tabs(
-        ["✏️ Manuell inmating", "⬆️ Filuppladdning", "ℹ️ Om systemet"]
+        ["Manuell inmating", "Filuppladdning", "Om systemet"]
     )
 
     with tab1:
-        st.header("Manuell prisprediktion")
 
         col1, col2 = st.columns(2)
 
@@ -444,7 +437,6 @@ def main():
                         st.error(f"❌ Fel: {error_msg}")
 
     with tab2:
-        st.header("Config-fil prediktion")
         st.info("Ladda upp en Config-fil prediktion.")
 
         uploaded_file = st.file_uploader(
@@ -533,11 +525,8 @@ def main():
                 st.error(f"Fel vid läsning av fil: {str(e)}")
 
     with tab3:
-        st.header("Om Systemet")
 
         st.markdown("""
-        ### 🏗️ Systemarkitektur
-        
         Detta system består av:
         
         1. **ML Model** - Gradient Boosting Regressor
@@ -560,15 +549,15 @@ def main():
            - Model registry
            - Metrics & parameters
         
-        ### 📊 Features
+        ### Features
         
-        - ✅ Enskild prediktion
-        - ✅ Batch prediktion
-        - ✅ Konfidensintervall
-        - ✅ Model versionering
-        - ✅ Prediction logging
+        - Enskild prediktion
+        - Batch prediktion
+        - Konfidensintervall
+        - Model versionering
+        - Prediction logging
         
-        ### 🚀 Deployment
+        ### Deployment
         
         Systemet kan deployas på:
         - Render.com
@@ -577,9 +566,7 @@ def main():
         - AWS/GCP/Azure
         """)
 
-        st.divider()
-
-        st.subheader("📈 Model Performance")
+        st.subheader("Model Performance")
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Test R²", "0.9861")
