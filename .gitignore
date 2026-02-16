@@ -53,6 +53,7 @@ mlflow.db
 # models/*.h5
 
 # Data (if sensitive)
+data/configs/*.json
 # data/*.csv
 # data/*.parquet
 
