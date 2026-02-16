@@ -83,12 +83,119 @@ st.markdown(
         margin: 0.5rem 0;
     }
     
+    /* Systeminformation card - wrap the entire column content */
+    .system-info-card {
+        background-color: #2D2D2D;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Plats & Testning card */
+    .location-testing-card {
+        background-color: #2D2D2D;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Target the first column (col1) which contains Systeminformation */
+    .stColumn:first-child > div,
+    div[data-testid="column"]:first-child > div {
+        background-color: #2D2D2D;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Target the second column (col2) which contains Plats & Testning */
+    .stColumn:nth-child(2) > div,
+    div[data-testid="column"]:nth-child(2) > div {
+        background-color: #2D2D2D;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Ensure all elements inside cards have proper spacing */
+    .system-info-card > *,
+    .location-testing-card > * {
+        margin-bottom: 0.5rem;
+    }
+    
+    .system-info-card > *:last-child,
+    .location-testing-card > *:last-child {
+        margin-bottom: 0;
+    }
+    
     /* Main header */
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
         color: white;
         margin-bottom: 1rem;
+        margin-top: 0;
+        padding-top: 0;
+    }
+    
+    /* Hide empty container above header - comprehensive targeting */
+    .main .block-container > div:first-child:empty,
+    .main .block-container > div:first-child:has(> div:empty),
+    .main .element-container:first-child:empty {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        visibility: hidden !important;
+    }
+    
+    /* Hide the first element container if it doesn't contain the header */
+    .main .block-container > div:first-child:not(:has(.main-header)) {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Hide empty markdown containers */
+    .main .block-container > div:first-child .stMarkdown:empty,
+    .stMarkdown:empty,
+    div[data-testid="stMarkdownContainer"]:empty,
+    div[data-testid="stMarkdownContainer"]:has(> div:empty) {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Remove top padding from main container */
+    .main .block-container {
+        padding-top: 1rem !important;
+    }
+    
+    /* Target the header container specifically - remove top margin */
+    .main .block-container > div:has(.main-header) {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* Hide any Streamlit containers before the header - aggressive targeting */
+    .main .block-container > div:first-child:not(:has(.main-header)) {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Alternative: Hide first child if it's not the header container */
+    .main .block-container > div:nth-child(1):not(:has(.main-header)) {
+        display: none !important;
+    }
+    
+    /* Make sure header is the first visible element */
+    .main .block-container > div:has(.main-header) {
+        order: -1;
     }
     
     /* Prediction box */
@@ -262,7 +369,7 @@ def make_prediction(data):
 def main():
     """Main Streamlit app."""
 
-    # Header
+    # Header - using write to avoid empty container
     st.markdown(
         '<div class="main-header">Brandlarmsavtal FDP</div>',
         unsafe_allow_html=True,
@@ -300,75 +407,89 @@ def main():
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("Systeminformation")
+            # Systeminformation card
+            with st.container():
+                st.markdown(
+                    '<div class="system-info-card">',
+                    unsafe_allow_html=True,
+                )
+                st.subheader("Systeminformation")
 
-            antal_sektioner = st.number_input(
-                "Antal Sektioner",
-                min_value=1,
-                max_value=50,
-                value=8,
-                help="Antal brandlarmsektioner i systemet",
-            )
+                antal_sektioner = st.number_input(
+                    "Antal Sektioner",
+                    min_value=1,
+                    max_value=50,
+                    value=8,
+                    help="Antal brandlarmsektioner i systemet",
+                )
 
-            antal_detektorer = st.number_input(
-                "Antal Detektorer",
-                min_value=1,
-                max_value=200,
-                value=25,
-                help="Totalt antal branddetektorer",
-            )
+                antal_detektorer = st.number_input(
+                    "Antal Detektorer",
+                    min_value=1,
+                    max_value=200,
+                    value=25,
+                    help="Totalt antal branddetektorer",
+                )
 
-            antal_larmdon = st.number_input(
-                "Antal Larmdon",
-                min_value=1,
-                max_value=100,
-                value=15,
-                help="Antal larmdon (sirener, klockor, etc.)",
-            )
+                antal_larmdon = st.number_input(
+                    "Antal Larmdon",
+                    min_value=1,
+                    max_value=100,
+                    value=15,
+                    help="Antal larmdon (sirener, klockor, etc.)",
+                )
 
-            dörrhållarmagneter = st.number_input(
-                "Dörrhållarmagneter",
-                min_value=0,
-                max_value=50,
-                value=5,
-                help="Antal dörrhållarmagneter",
-            )
+                dörrhållarmagneter = st.number_input(
+                    "Dörrhållarmagneter",
+                    min_value=0,
+                    max_value=50,
+                    value=5,
+                    help="Antal dörrhållarmagneter",
+                )
+                st.markdown('</div>', unsafe_allow_html=True)
 
         with col2:
-            st.subheader("Plats & Testning")
+            # Plats & Testning card
+            with st.container():
+                st.markdown(
+                    '<div class="location-testing-card">',
+                    unsafe_allow_html=True,
+                )
+                st.subheader("Plats & Testning")
 
-            stad = st.selectbox(
-                "Stad",
-                [
-                    "Stockholm",
-                    "Göteborg",
-                    "Malmö",
-                    "Uppsala",
-                    "Linköping",
-                    "Örebro",
-                    "Västerås",
-                    "Helsingborg",
-                ],
-                help="Plats för testningen",
-            )
+                stad = st.selectbox(
+                    "Stad",
+                    [
+                        "Stockholm",
+                        "Göteborg",
+                        "Malmö",
+                        "Uppsala",
+                        "Linköping",
+                        "Örebro",
+                        "Västerås",
+                        "Helsingborg",
+                    ],
+                    help="Plats för testningen",
+                )
 
-            ventilation = st.radio(
-                "Ventilation",
-                [0, 1],
-                format_func=lambda x: "Ja" if x == 1 else "Nej",
-                help="Har byggnaden ventilationssystem?",
-            )
+                ventilation = st.radio(
+                    "Ventilation",
+                    [0, 1],
+                    format_func=lambda x: "Ja" if x == 1 else "Nej",
+                    help="Har byggnaden ventilationssystem?",
+                )
 
-            st.subheader("Testningsfrekvens")
-            frequency = st.radio(
-                "Välj frekvens",
-                ["kvartalsvis", "månadsvis", "årsvis"],
-                help="Hur ofta ska testningen utföras?",
-            )
+                st.subheader("Testningsfrekvens")
+                frequency = st.radio(
+                    "Välj frekvens",
+                    ["kvartalsvis", "månadsvis", "årsvis"],
+                    help="Hur ofta ska testningen utföras?",
+                )
 
-            kvartalsvis = 1 if frequency == "kvartalsvis" else 0
-            månadsvis = 1 if frequency == "månadsvis" else 0
-            årsvis = 1 if frequency == "årsvis" else 0
+                kvartalsvis = 1 if frequency == "kvartalsvis" else 0
+                månadsvis = 1 if frequency == "månadsvis" else 0
+                årsvis = 1 if frequency == "årsvis" else 0
+                st.markdown('</div>', unsafe_allow_html=True)
 
         # Prediction button
         if st.button("Prediktera Pris", type="primary", use_container_width=True):
