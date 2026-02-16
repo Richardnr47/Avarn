@@ -54,7 +54,7 @@ mlflow.db
 
 # Data (if sensitive)
 data/configs/*.json
-# data/*.csv
+data/*.csv
 # data/*.parquet
 
 # Jupyter
