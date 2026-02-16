@@ -11,8 +11,8 @@ from app.config import Config
 
 # Page config
 st.set_page_config(
-    page_title="Avarn - Brandlarmstestning Prisprediktion",
-    page_icon="🔥",
+    page_title="Brandlarmsavtal Prisprediktion",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -20,27 +20,219 @@ st.set_page_config(
 # Get API URL from config
 API_URL = Config.STREAMLIT_API_URL
 
-# Custom CSS
+# Custom CSS with new color scheme
 st.markdown(
     """
 <style>
+    /* Main background */
+    .stApp {
+        background-color: #232323;
+    }
+    
+    /* Main content area */
+    .main .block-container {
+        background-color: #232323;
+        color: white;
+    }
+    
+    /* Sidebar - comprehensive styling */
+    section[data-testid="stSidebar"],
+    .css-1d391kg,
+    [data-testid="stSidebar"] > div,
+    [data-testid="stSidebar"] > div > div,
+    [data-testid="stSidebar"] nav,
+    .css-1lcbmhc,
+    .css-1y4p8pa {
+        background-color: #232323 !important;
+        color: white !important;
+    }
+    
+    /* Sidebar text */
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    /* Sidebar headers */
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] span {
+        color: white !important;
+    }
+    
+    /* Sidebar success/error/info */
+    [data-testid="stSidebar"] .stSuccess,
+    [data-testid="stSidebar"] .stError,
+    [data-testid="stSidebar"] .stInfo {
+        background-color: #2D2D2D !important;
+        color: white !important;
+    }
+    
+    /* Cards and containers */
+    .prediction-box, .metric-box, 
+    div[data-testid="stMetricValue"],
+    div[data-testid="stDataFrame"],
+    .element-container {
+        background-color: #2D2D2D;
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+    }
+    
+    /* Main header */
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
-        color: #1f77b4;
+        color: white;
         margin-bottom: 1rem;
     }
+    
+    /* Prediction box */
     .prediction-box {
-        background-color: #f0f2f6;
+        background-color: #2D2D2D;
         padding: 1.5rem;
         border-radius: 10px;
-        border-left: 5px solid #1f77b4;
+        border-left: 5px solid #58C5CA;
+        color: white;
     }
+    
+    /* Metric box */
     .metric-box {
-        background-color: white;
+        background-color: #2D2D2D;
         padding: 1rem;
         border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        color: white;
+    }
+    
+    /* Primary buttons */
+    .stButton > button {
+        background-color: #58C5CA;
+        color: black;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        background-color: #4ab5ba;
+        color: black;
+    }
+    
+    /* Secondary buttons (text buttons) */
+    button[kind="secondary"],
+    .stDownloadButton > button {
+        background-color: transparent;
+        color: black;
+        border: 1px solid #58C5CA;
+    }
+    
+    button[kind="secondary"]:hover,
+    .stDownloadButton > button:hover {
+        background-color: #58C5CA;
+        color: black;
+    }
+    
+    /* Download buttons */
+    .stDownloadButton > button {
+        background-color: #58C5CA;
+        color: black;
+        border: none;
+    }
+    
+    .stDownloadButton > button:hover {
+        background-color: #4ab5ba;
+        color: black;
+    }
+    
+    /* All text white */
+    p, h1, h2, h3, h4, h5, h6, label, span, div {
+        color: white !important;
+    }
+    
+    /* Input fields */
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input,
+    .stSelectbox > div > div > select {
+        background-color: #2D2D2D;
+        color: white;
+        border: 1px solid #58C5CA;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #2D2D2D;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        color: white;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #58C5CA;
+        color: black;
+    }
+    
+    /* Dataframes */
+    .dataframe {
+        background-color: #2D2D2D;
+        color: white;
+    }
+    
+    /* Success/Error/Info messages */
+    .stSuccess {
+        background-color: #2D2D2D;
+        border-left: 4px solid #58C5CA;
+    }
+    
+    .stError {
+        background-color: #2D2D2D;
+    }
+    
+    .stInfo {
+        background-color: #2D2D2D;
+    }
+    
+    /* Dividers */
+    hr {
+        border-color: #58C5CA;
+    }
+    
+    /* Selectbox and dropdowns */
+    .stSelectbox label,
+    .stNumberInput label,
+    .stTextInput label {
+        color: white !important;
+    }
+    
+    /* Additional sidebar styling - force dark background */
+    div[data-testid="stSidebar"],
+    div[data-testid="stSidebar"] > div:first-child,
+    div[data-testid="stSidebar"] > div:first-child > div:first-child {
+        background-color: #232323 !important;
+        background-image: none !important;
+    }
+    
+    /* Sidebar content containers */
+    div[data-testid="stSidebar"] .element-container,
+    div[data-testid="stSidebar"] .stMarkdown,
+    div[data-testid="stSidebar"] .stHeader {
+        background-color: transparent !important;
+        color: white !important;
+    }
+    
+    /* Override any light backgrounds in sidebar */
+    div[data-testid="stSidebar"] * {
+        background-color: transparent !important;
+    }
+    
+    div[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #232323 0%, #232323 100%) !important;
     }
 </style>
 """,
@@ -77,30 +269,14 @@ def main():
 
     # Header
     st.markdown(
-        '<div class="main-header">🔥 Avarn - Brandlarmstestning Prisprediktion</div>',
+        '<div class="main-header">Brandlarmsavtal</div>',
         unsafe_allow_html=True,
     )
 
     # Sidebar
     with st.sidebar:
-        st.header("⚙️ Inställningar")
+        st.header("Information")
 
-        # API Health Check
-        api_healthy, health_data = check_api_health()
-        if api_healthy:
-            st.success("✅ API är online")
-            if health_data:
-                st.caption(f"Model: {health_data.get('model_version', 'N/A')}")
-                st.caption(
-                    f"Pipeline: {health_data.get('feature_pipeline_version', 'N/A')}"
-                )
-        else:
-            st.error("❌ API är offline")
-            st.info("Kontrollera att API:et körs på http://localhost:8000")
-
-        st.divider()
-
-        st.header("📊 Information")
         st.markdown("""
         Detta system predikterar priser för brandlarmstestning baserat på:
         - Antal sektioner
@@ -112,17 +288,21 @@ def main():
         """)
 
         st.divider()
-
-        st.markdown("**Version:** 1.0.0")
-        st.markdown("**Powered by:** MLflow + FastAPI + Streamlit")
+                # API Health Check
+        api_healthy, health_data = check_api_health()
+        if api_healthy:
+            st.success("✅ API är online")
+        else:
+            st.error("❌ API är offline")
+            st.info("Kontrollera att API:et körs på http://localhost:8000")
 
     # Main content
     tab1, tab2, tab3 = st.tabs(
-        ["🎯 Prediktion", "📊 Batch Prediktion", "ℹ️ Om Systemet"]
+        ["✏️ Manuell inmating", "⬆️ Filuppladdning", "ℹ️ Om systemet"]
     )
 
     with tab1:
-        st.header("Enskild Prisprediktion")
+        st.header("Manuell prisprediktion")
 
         col1, col2 = st.columns(2)
 
@@ -198,7 +378,7 @@ def main():
             årsvis = 1 if frequency == "årsvis" else 0
 
         # Prediction button
-        if st.button("🎯 Prediktera Pris", type="primary", use_container_width=True):
+        if st.button("Prediktera Pris", type="primary", use_container_width=True):
             if not api_healthy:
                 st.error("API är inte tillgängligt. Starta API:et först.")
             else:
@@ -264,12 +444,12 @@ def main():
                         st.error(f"❌ Fel: {error_msg}")
 
     with tab2:
-        st.header("Batch Prediktion")
-        st.info("Ladda upp en CSV-fil med flera objekt för batch-prediktion.")
+        st.header("Config-fil prediktion")
+        st.info("Ladda upp en Config-fil prediktion.")
 
         uploaded_file = st.file_uploader(
-            "Välj CSV-fil",
-            type=["csv"],
+            "Välj Config-fil",
+            type=["json"],
             help="CSV-fil med kolumner: antal_sektioner, antal_detektorer, antal_larmdon, dörrhållarmagneter, ventilation, stad, kvartalsvis, månadsvis, årsvis",
         )
 

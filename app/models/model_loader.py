@@ -146,13 +146,26 @@ class ModelLoader:
         Make prediction on request data.
         
         Args:
-            request_dict: Dictionary with feature values
+            request_dict: Dictionary with feature values (simple UI features or full JSON config features)
             
         Returns:
             Predicted price
         """
         if self.model is None or self.feature_pipeline is None:
             raise RuntimeError("Model not loaded. Call load_latest_model() first.")
+        
+        # Check if this is a simple feature set (from UI) and needs mapping
+        simple_feature_keys = {
+            "antal_sektioner", "antal_detektorer", "antal_larmdon",
+            "dörrhållarmagneter", "ventilation", "stad",
+            "kvartalsvis", "månadsvis", "årsvis"
+        }
+        
+        # If request has simple features, map them to full features
+        if simple_feature_keys.intersection(set(request_dict.keys())):
+            from app.features.feature_mapper import map_simple_to_full_features
+            request_dict = map_simple_to_full_features(request_dict)
+            logger.debug("Mapped simple features to full feature set")
         
         # Convert request to DataFrame
         df = pd.DataFrame([request_dict])
@@ -164,7 +177,7 @@ class ModelLoader:
             X, _ = self.feature_pipeline.transform(df, fit=False)
         else:
             # Old DataPreprocessor format
-            X = self.feature_pipeline.prepare_features(df, fit=False)
+            X, _ = self.feature_pipeline.prepare_features(df, fit=False)
         
         # Make prediction
         prediction = self.model.predict(X)[0]

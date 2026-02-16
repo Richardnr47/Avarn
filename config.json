@@ -1,5 +1,7 @@
 {
   "data": {
+    "config_dir": "data/configs",
+    "price_file": null,
     "training_file": "data/training_data.csv",
     "test_size": 0.2,
     "random_state": 42

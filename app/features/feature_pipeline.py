@@ -4,6 +4,7 @@ Handles feature transformation, validation, and storage.
 """
 
 import json
+import logging
 import os
 import pickle
 from datetime import datetime
@@ -14,6 +15,8 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+logger = logging.getLogger(__name__)
 
 
 class FeaturePipeline:
@@ -166,8 +169,17 @@ class FeaturePipeline:
                 if not found:
                     missing.append(expected_col)
 
+        # Fill missing features with default values (0 for numeric, empty string for categorical)
         if missing:
-            raise ValueError(f"Missing required features: {missing}")
+            logger.warning(f"Missing features detected: {missing}. Filling with default values.")
+            for col in missing:
+                if col in self.numeric_features:
+                    df[col] = 0
+                elif col in self.categorical_features:
+                    df[col] = ""
+                else:
+                    # Default to 0 for unknown feature types
+                    df[col] = 0
 
         # Rename columns to match expected names
         if column_mapping and any(k != v for k, v in column_mapping.items()):
@@ -303,8 +315,18 @@ if __name__ == "__main__":
     # Example usage
     from pathlib import Path
 
-    data_path = Path(__file__).parent.parent.parent / "data" / "training_data.csv"
-    df = pd.read_csv(data_path)
+    # Try loading from JSON configs first (preferred)
+    try:
+        from app.data.config_loader import load_configs_from_directory
+        
+        config_dir = Path(__file__).parent.parent.parent / "data" / "configs"
+        df = load_configs_from_directory(config_dir=config_dir)
+        print(f"Loaded {len(df)} records from JSON configs")
+    except (FileNotFoundError, ValueError, ImportError):
+        # Fallback to CSV for backward compatibility
+        print("JSON configs not available, falling back to CSV...")
+        data_path = Path(__file__).parent.parent.parent / "data" / "training_data.csv"
+        df = pd.read_csv(data_path)
 
     # Basic cleaning
     df = df.drop_duplicates()

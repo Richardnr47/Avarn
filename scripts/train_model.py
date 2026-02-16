@@ -158,8 +158,20 @@ def main():
     parser.add_argument(
         "--data",
         type=str,
-        default="../data/training_data.csv",
-        help="Path to training data CSV file",
+        default=None,
+        help="Path to training data CSV file (legacy, use --config-dir instead)",
+    )
+    parser.add_argument(
+        "--config-dir",
+        type=str,
+        default="../data/configs",
+        help="Path to directory containing JSON configuration files",
+    )
+    parser.add_argument(
+        "--price-file",
+        type=str,
+        default=None,
+        help="Optional path to CSV file with site_id,price mapping",
     )
     parser.add_argument(
         "--output",
@@ -179,6 +191,31 @@ def main():
 
     args = parser.parse_args()
 
+    # Auto-detect price file if not provided and using JSON configs
+    price_file = args.price_file
+    if price_file is None and args.config_dir:
+        # Try to find price_mapping.csv in the same directory as configs or parent data directory
+        from pathlib import Path
+        
+        # Resolve relative paths properly
+        config_path = Path(args.config_dir)
+        if not config_path.is_absolute():
+            # Make it relative to the script's directory
+            script_dir = Path(__file__).parent
+            config_path = (script_dir / args.config_dir).resolve()
+        
+        # Try: config_dir/../price_mapping.csv (data/price_mapping.csv)
+        potential_price_file = config_path.parent / "price_mapping.csv"
+        if potential_price_file.exists():
+            price_file = str(potential_price_file)
+            print(f"Auto-detected price file: {price_file}")
+        else:
+            # Try: config_dir/price_mapping.csv
+            potential_price_file = config_path / "price_mapping.csv"
+            if potential_price_file.exists():
+                price_file = str(potential_price_file)
+                print(f"Auto-detected price file: {price_file}")
+
     # Create output directory if it doesn't exist
     os.makedirs(args.output, exist_ok=True)
 
@@ -188,8 +225,31 @@ def main():
 
     # Load and preprocess data
     print("Loading and preprocessing data...")
-    df = preprocessor.load_data(args.data)
+    df = preprocessor.load_data(
+        file_path=args.data,
+        config_dir=args.config_dir,
+        price_file=price_file,
+    )
     df = preprocessor.clean_data(df)
+    
+    # Check if target column exists (required for training)
+    if preprocessor.target_column not in df.columns:
+        error_msg = (
+            f"Target column '{preprocessor.target_column}' not found in data.\n"
+            f"For JSON configs, provide a price mapping file with --price-file.\n"
+        )
+        if args.config_dir:
+            from pathlib import Path
+            config_path = Path(args.config_dir)
+            suggested_path = config_path.parent / "price_mapping.csv"
+            error_msg += (
+                f"Example: python scripts/generate_mock_prices.py --config-dir {args.config_dir} "
+                f"--output {suggested_path}\n"
+                f"Or: python scripts/train_model.py --config-dir {args.config_dir} "
+                f"--price-file {suggested_path}"
+            )
+        raise ValueError(error_msg)
+    
     X, y = preprocessor.prepare_features(df, fit=True)
 
     # Split data

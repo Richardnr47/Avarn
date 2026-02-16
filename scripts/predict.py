@@ -53,7 +53,7 @@ class PricePredictor:
             df = data.copy()
 
         # Preprocess data (without target column)
-        X = self.preprocessor.prepare_features(df, fit=False)
+        X, _ = self.preprocessor.prepare_features(df, fit=False)
 
         # Make predictions
         predictions = self.model.predict(X)

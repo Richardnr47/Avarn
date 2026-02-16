@@ -27,7 +27,9 @@ from app.features.feature_pipeline import FeaturePipeline
 
 
 def train_with_mlflow(
-    data_path: str,
+    data_path: str = None,
+    config_dir: str = None,
+    price_file: str = None,
     experiment_name: str = "fire_alarm_price_prediction",
     test_size: float = 0.2,
     random_state: int = 42
@@ -36,7 +38,9 @@ def train_with_mlflow(
     Train models with MLflow tracking.
     
     Args:
-        data_path: Path to training data CSV
+        data_path: Path to training data CSV (legacy, use config_dir instead)
+        config_dir: Path to directory containing JSON configuration files
+        price_file: Optional path to CSV file with site_id,price mapping
         experiment_name: MLflow experiment name
         test_size: Proportion of test set
         random_state: Random seed
@@ -56,11 +60,27 @@ def train_with_mlflow(
     
     # Load and prepare data
     print("Loading data...")
-    import pandas as pd
-
-    # Load data
-    df = pd.read_csv(data_path)
-    print(f"Loaded {len(df)} records")
+    from app.data.config_loader import load_configs_from_directory, load_price_mapping
+    
+    # Prefer JSON configs over CSV
+    if config_dir:
+        price_mapping = None
+        if price_file:
+            price_mapping = load_price_mapping(price_file)
+        
+        df = load_configs_from_directory(
+            config_dir=config_dir,
+            price_mapping=price_mapping,
+            price_column="price",
+        )
+        print(f"Loaded {len(df)} records from JSON configs")
+    elif data_path:
+        # Fallback to CSV for backward compatibility
+        import pandas as pd
+        df = pd.read_csv(data_path)
+        print(f"Loaded {len(df)} records from CSV")
+    else:
+        raise ValueError("Either config_dir or data_path must be provided")
     
     # Basic cleaning
     df = df.drop_duplicates()
@@ -223,8 +243,14 @@ if __name__ == "__main__":
     project_root = Path(__file__).parent.parent.parent
     default_data_path = project_root / "data" / "training_data.csv"
     
-    parser.add_argument('--data', type=str, default=str(default_data_path),
-                        help='Path to training data')
+    default_config_dir = project_root / "data" / "configs"
+    
+    parser.add_argument('--data', type=str, default=None,
+                        help='Path to training data CSV (legacy, use --config-dir instead)')
+    parser.add_argument('--config-dir', type=str, default=str(default_config_dir),
+                        help='Path to directory containing JSON configuration files')
+    parser.add_argument('--price-file', type=str, default=None,
+                        help='Optional path to CSV file with site_id,price mapping')
     parser.add_argument('--experiment', type=str, default='fire_alarm_price_prediction',
                         help='MLflow experiment name')
     
@@ -232,5 +258,7 @@ if __name__ == "__main__":
     
     train_with_mlflow(
         data_path=args.data,
+        config_dir=args.config_dir,
+        price_file=args.price_file,
         experiment_name=args.experiment
     )

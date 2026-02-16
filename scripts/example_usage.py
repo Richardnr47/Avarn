@@ -26,9 +26,9 @@ def example_training():
     preprocessor = DataPreprocessor()
     trainer = ModelTrainer()
 
-    # Load and preprocess data
-    data_path = "../data/training_data.csv"
-    df = preprocessor.load_data(data_path)
+    # Load and preprocess data from JSON configs
+    config_dir = "../data/configs"
+    df = preprocessor.load_data(config_dir=config_dir)
     df = preprocessor.clean_data(df)
     X, y = preprocessor.prepare_features(df, fit=True)
 

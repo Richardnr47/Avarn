@@ -5,12 +5,24 @@ Handles data loading, cleaning, feature engineering, and preparation.
 
 import os
 import pickle
+import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+try:
+    from app.data.config_loader import load_configs_from_directory, load_price_mapping
+except ImportError:
+    # Fallback if app module not available
+    load_configs_from_directory = None
+    load_price_mapping = None
 
 
 class DataPreprocessor:
@@ -30,22 +42,52 @@ class DataPreprocessor:
         self.categorical_features = None
         self.target_column = "price"
 
-    def load_data(self, file_path):
+    def load_data(self, file_path=None, config_dir=None, price_file=None):
         """
-        Load data from CSV file.
+        Load data from CSV file or JSON configuration directory.
 
         Args:
-            file_path: Path to the CSV file
+            file_path: Path to CSV file (legacy support)
+            config_dir: Path to directory containing JSON config files (preferred)
+            price_file: Optional path to CSV file with site_id,price mapping
 
         Returns:
             DataFrame with loaded data
-        """
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Data file not found: {file_path}")
 
-        df = pd.read_csv(file_path)
-        print(f"Loaded {len(df)} records from {file_path}")
-        return df
+        Note:
+            If both file_path and config_dir are provided, config_dir takes precedence.
+            If config_dir is provided, JSON configs will be loaded and features extracted.
+        """
+        # Prefer JSON configs over CSV
+        if config_dir:
+            if load_configs_from_directory is None:
+                raise ImportError(
+                    "Cannot load JSON configs: app.data.config_loader not available"
+                )
+            
+            # Load price mapping if provided
+            price_mapping = None
+            if price_file:
+                price_mapping = load_price_mapping(price_file)
+            
+            df = load_configs_from_directory(
+                config_dir=config_dir,
+                price_mapping=price_mapping,
+                price_column=self.target_column,
+            )
+            print(f"Loaded {len(df)} records from JSON configs in {config_dir}")
+            return df
+        
+        # Fallback to CSV for backward compatibility
+        if file_path:
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"Data file not found: {file_path}")
+            
+            df = pd.read_csv(file_path)
+            print(f"Loaded {len(df)} records from {file_path}")
+            return df
+        
+        raise ValueError("Either file_path or config_dir must be provided")
 
     def clean_data(self, df):
         """
@@ -195,10 +237,9 @@ class DataPreprocessor:
 
         X_df = pd.DataFrame(X_transformed, columns=feature_names, index=X.index)
 
-        if y is not None:
-            return X_df, y
-        else:
-            return X_df
+        # Always return a tuple for consistency
+        # y will be None if target column doesn't exist (e.g., for prediction)
+        return X_df, y
 
     def split_data(self, X, y, test_size=0.2, random_state=42):
         """
@@ -257,8 +298,15 @@ if __name__ == "__main__":
     # Example usage
     preprocessor = DataPreprocessor()
 
-    # Load and process data
-    df = preprocessor.load_data("../data/training_data.csv")
+    # Load and process data from JSON configs (preferred) or CSV (legacy)
+    try:
+        # Try loading from JSON configs first
+        df = preprocessor.load_data(config_dir="../data/configs")
+    except (FileNotFoundError, ValueError, ImportError):
+        # Fallback to CSV for backward compatibility
+        print("JSON configs not available, falling back to CSV...")
+        df = preprocessor.load_data(file_path="../data/training_data.csv")
+    
     df = preprocessor.clean_data(df)
     X, y = preprocessor.prepare_features(df, fit=True)
 
